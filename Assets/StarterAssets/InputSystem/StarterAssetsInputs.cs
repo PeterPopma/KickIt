@@ -13,6 +13,7 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 		public bool shoot;
+		public bool pass;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -41,9 +42,15 @@ namespace StarterAssets
 		{
 			JumpInput(value.isPressed);
 		}
+
 		public void OnShoot(InputValue value)
 		{
 			ShootInput(value.isPressed);
+		}
+
+		public void OnPass(InputValue value)
+		{
+			PassInput(value.isPressed);
 		}
 
 		public void OnSprint(InputValue value)
@@ -78,6 +85,10 @@ namespace StarterAssets
 		public void ShootInput(bool newShootState)
 		{
 			shoot = newShootState;
+		}
+		public void PassInput(bool newPassState)
+		{
+			pass = newPassState;
 		}
 
 #if !UNITY_IOS || !UNITY_ANDROID

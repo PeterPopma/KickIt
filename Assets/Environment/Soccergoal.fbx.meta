@@ -3,7 +3,22 @@ guid: 30e9c3cc89e3ce6438bfeca6386ff4ab
 ModelImporter:
   serializedVersion: 22102
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: IronPole
+    second: {fileID: 2100000, guid: 5ed065e532b39774786ac16eb357cfef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Net
+    second: {fileID: 2100000, guid: 3a71e4bf5da4de04cbc4fea332e5bd10, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pole
+    second: {fileID: 2100000, guid: 46dec3e63e9f5a34dbdfb294fe43690b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
