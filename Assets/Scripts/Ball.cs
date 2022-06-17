@@ -171,7 +171,7 @@ public class Ball : MonoBehaviour
             }
 
             Vector3 movedirection = passDestinationPlayer.PlayerBallPosition.position - transform.position;
-            if(movedirection.magnitude<1f)
+            if (movedirection.magnitude<1f)
             {
                 // pass arrived
                 transform.position = passDestinationPlayer.PlayerBallPosition.position;

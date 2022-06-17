@@ -9,21 +9,32 @@ public class Crowd : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        float x = -36.9199982f;
-        while (x <= -20.8099995)
+        GameObject crowdRoot = GameObject.Find("Crowd");
+        var crowdList = new List<GameObject>();
+        /*  
+            y start: 11.7089996
+            y end: 2.81900001
+            y step: -0.7989998
+            z start: -40.4700012
+            z end: -29.941
+            z step: 1.0149994 
+        */
+        float z = -40.4700012f;
+        for (float y = 11.7089996f; y >= 2.81900001; y -= 0.7989998f)
         {
-            GameObject newPerson = Instantiate(pfCrowd, new Vector3(x, 11.6000004f, -40.4799995f), Quaternion.identity);
-            newPerson.transform.Rotate(new Vector3(0,90,0));
-            x += 1.099968f;
-        }
-        x = -36.3410011f;
-        while (x <= -20.743)
-        {
-            GameObject newPerson = Instantiate(pfCrowd, new Vector3(x, 10.7989998f, -39.4529991f), Quaternion.identity);
-            newPerson.transform.Rotate(new Vector3(0, 90, 0));
-            x += 1.099968f;
+            for (float x = -36.9199982f; x <= -20.8099995; x += 1.099968f)
+            {
+                GameObject newPerson = Instantiate(pfCrowd, new Vector3(x, y, z), Quaternion.identity);
+                newPerson.transform.Rotate(new Vector3(0, 90, 0));
+                newPerson.isStatic = true;
+                newPerson.transform.parent = crowdRoot.transform;
+                crowdList.Add(newPerson);
+            }
+            z += 1.0149994f;
         }
 
+        GameObject[] gos = crowdList.ToArray();
+        StaticBatchingUtility.Combine(gos, crowdRoot);
     }
 
     // Update is called once per frame

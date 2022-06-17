@@ -58,7 +58,7 @@ public class Game : MonoBehaviour
 
         newTeam = new Team(1, false);
         teams.Add(newTeam);
-        spawnedPlayer = Instantiate(pfPlayer3, playerSpawnPosition3.transform.position, Quaternion.identity);
+/*        spawnedPlayer = Instantiate(pfPlayer3, playerSpawnPosition3.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Thirza";
         spawnedPlayer.GetComponent<Player>().Team = newTeam;
         newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
@@ -69,7 +69,7 @@ public class Game : MonoBehaviour
 
         spawnedPlayer.GetComponent<Player>().FellowPlayer = spawnedPlayer2.GetComponent<Player>();
         spawnedPlayer2.GetComponent<Player>().FellowPlayer = spawnedPlayer.GetComponent<Player>();
-
+*/
         goals[0] = GameObject.Find("Goal1").transform;
         goals[1] = GameObject.Find("Goal2").transform;
     }

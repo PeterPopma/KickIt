@@ -22,11 +22,11 @@ public class Player : MonoBehaviour
     private Animator animator;
     private AudioSource soundDribble;
     private AudioSource soundShoot;
+    private AudioSource soundSteal;
     private float distanceSinceLastDribble;
     private bool stickBallToPlayer;
     private float timeShot;
     private float stealDelay;       // after the player has lost the ball, he cannot steal it back for some time
-    [SerializeField] private TextMeshProUGUI textDebug;
     private float updateTime;
     private Team team;
     private bool takeFreeKick;
@@ -43,11 +43,11 @@ public class Player : MonoBehaviour
 
     void Awake()
     {
-        textDebug = GameObject.Find("Canvas/DebugText").GetComponent<TextMeshProUGUI>();
         transformBall = GameObject.Find("Ball").transform;
         scriptBall = transformBall.GetComponent<Ball>();
         soundDribble = GameObject.Find("Sound/dribble").GetComponent<AudioSource>();
         soundShoot = GameObject.Find("Sound/shoot").GetComponent<AudioSource>();
+        soundSteal = GameObject.Find("Sound/woosh").GetComponent<AudioSource>();
         scriptGame = GameObject.Find("Scripts").GetComponent<Game>();
         starterAssetsInputs = GetComponent<StarterAssetsInputs>();
         animator = GetComponent<Animator>();
@@ -65,11 +65,10 @@ public class Player : MonoBehaviour
             stealDelay -= Time.deltaTime;
         }
 
-        updateTime+=Time.deltaTime;
+        updateTime += Time.deltaTime;
         if (updateTime > 1.0f)
         {
             updateTime = 0f;
-            textDebug.text = scriptBall.Speed.ToString();
         }
 
         if (StickBallToPlayer)
@@ -88,6 +87,7 @@ public class Player : MonoBehaviour
             float distanceToPlayer = Vector3.Distance(transformBall.position, PlayerBallPosition.position);
             if (distanceToPlayer < 0.6)
             {
+                soundSteal.Play();
                 scriptGame.SetPlayerWithBall(this);
                 StickBallToPlayer = true;
                 scriptBall.TakeBall(this);
