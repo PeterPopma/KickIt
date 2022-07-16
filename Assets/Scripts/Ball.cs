@@ -75,14 +75,14 @@ public class Ball : MonoBehaviour
     private void CheckBallOutOfField()
     {
         // ball out of field
-        if (transform.position.z < -25)
+        if (transform.position.z < Game.FIELD_BOUNDARY_LOWER_Z)
         {
             soundWhistle.Play();
             isThrowIn = true;
             ballOutOfFieldTimeOut = 1.0f;
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, -25);
         }
-        if (transform.position.z > 25)
+        if (transform.position.z > Game.FIELD_BOUNDARY_UPPER_Z)
         {
             soundWhistle.Play();
             isThrowIn = true;
@@ -90,7 +90,7 @@ public class Ball : MonoBehaviour
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, 25);
         }
 
-        if (transform.position.x < -52.6f)
+        if (transform.position.x < Game.FIELD_BOUNDARY_LOWER_X)
         {
             soundWhistle.Play();
             isThrowIn = false;
@@ -113,7 +113,7 @@ public class Ball : MonoBehaviour
                 }
             }
         }
-        if (transform.position.x > 52.3f)
+        if (transform.position.x > Game.FIELD_BOUNDARY_UPPER_X)
         {
             soundWhistle.Play();
             isThrowIn = false;
@@ -141,6 +141,11 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (transform.position.y<0)
+        {
+            int error = 1;
+        }
+
         if (ballOutOfFieldTimeOut>0)
         {
             ballOutOfFieldTimeOut -= Time.deltaTime;

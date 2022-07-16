@@ -1,42 +1,52 @@
 fileFormatVersion: 2
 guid: 6ee75cea565c5da44a5bc41845817008
 ModelImporter:
-  serializedVersion: 22102
+  serializedVersion: 22103
   internalIDToNameTable:
   - first:
       74: -203655887218126122
     second: mixamo.com
   externalObjects:
   - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ch02_body
+    second: {fileID: 2100000, guid: 3a3975f20922cc440bbfc1bf8a341c03, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ch02_hair
+    second: {fileID: 2100000, guid: a42f2f32f7a77cd4cbb682c8836d751f, type: 2}
+  - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1001_Diffuse
-    second: {fileID: 2800000, guid: 591b83ec3e66a1f41952c4812e3fe10d, type: 3}
+    second: {fileID: 2800000, guid: d5708c471ba420c40b5a86b6a39f6c1c, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1001_Glossiness
-    second: {fileID: 2800000, guid: 628cd6e55127e36428e8c9185602ced7, type: 3}
+    second: {fileID: 2800000, guid: 0bfd4ff7da62de047ae3987210771112, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1001_Normal
-    second: {fileID: 2800000, guid: 937b5a59bd68e2047874db273922db37, type: 3}
+    second: {fileID: 2800000, guid: aefcc214452219742a9374dbface2a17, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1001_Specular
-    second: {fileID: 2800000, guid: 0a8d545b7cf49394aa00f9f75d433feb, type: 3}
+    second: {fileID: 2800000, guid: 00b894498f189664d860749ed6c20379, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1002_Diffuse
-    second: {fileID: 2800000, guid: 58220d2933441034c8fcde2184a48b7a, type: 3}
+    second: {fileID: 2800000, guid: 0af29b69c7d15a94abcee0e4a24dc5cd, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Ch02_1002_Normal
-    second: {fileID: 2800000, guid: 10534d0574b1f394bbb415b0b21c4e09, type: 3}
+    second: {fileID: 2800000, guid: c58bab103267e2e47b98e326af7a48e4, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -910,6 +920,7 @@ ModelImporter:
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

@@ -14,6 +14,10 @@ public class Game : MonoBehaviour
     public static Game Instance;
     public const float HAVING_BALL_SLOWDOWN_FACTOR = 0.8f;
     public const float PLAYER_Y_POSITION = 0.5f;
+    public const float FIELD_BOUNDARY_LOWER_X = -52.6f;
+    public const float FIELD_BOUNDARY_UPPER_X = 52.3f;
+    public const float FIELD_BOUNDARY_LOWER_Z = -25f;
+    public const float FIELD_BOUNDARY_UPPER_Z = 25f;
     [SerializeField] private GameObject playerSpawnPosition1;
     [SerializeField] private GameObject playerSpawnPosition2;
     [SerializeField] private GameObject playerSpawnPosition3;
@@ -59,8 +63,8 @@ public class Game : MonoBehaviour
         soundCheer = GameObject.Find("Sound/cheer").GetComponent<AudioSource>();
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
         scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
-        sliderPowerBar = GameObject.Find("Canvas/PowerBar").GetComponent<Slider>();
-        powerBar = GameObject.Find("Canvas/PowerBar");
+        sliderPowerBar = GameObject.Find("Canvas/Panel/PowerBar").GetComponent<Slider>();
+        powerBar = GameObject.Find("Canvas/Panel/PowerBar");
 
         Team newTeam = new Team(0, true);
         teams.Add(newTeam);
@@ -118,7 +122,7 @@ public class Game : MonoBehaviour
             }
         }
         // Set player to kick off
-        Vector3 position = new Vector3(0.5f - teamKickOff, KickOffPosition.y, kickOffPosition.z);
+        Vector3 position = new(0.5f - teamKickOff, KickOffPosition.y, kickOffPosition.z);
         teams[teamKickOff].Players[0].SetPosition(position);
         scriptBall.BallOutOfFieldTimeOut = 0;
         scriptBall.PutOnCenterSpot();
@@ -203,7 +207,7 @@ public class Game : MonoBehaviour
             textGoal.fontSize = 350 - (goalTextColorAlpha * 250);
         }
 
-        PerformSanityChecks();
+//        PerformSanityChecks();
     }
 
     private void PerformSanityChecks()
@@ -214,10 +218,9 @@ public class Game : MonoBehaviour
         {
             foreach (Player player in team.Players)
             {
-                // players cannot be lower than the field
                 if (transform.position.y < 0)
                 {
-                    DisplayErrorMessage();
+                    DisplayErrorMessage("players cannot be lower than the field");
                 }
                 if (player.GetComponent<PlayerInput>()!=null && player.GetComponent<PlayerInput>().enabled == true)
                 {
@@ -226,34 +229,34 @@ public class Game : MonoBehaviour
             }
         }
 
-        // there must always be a player with input enabled
         if (playerWithInputEnabled==null)
         {
-            DisplayErrorMessage();
+            DisplayErrorMessage("there must always be a player with input enabled");
         }
 
-        // active player must be player with input enabled
         if (ActiveHumanPlayer!=playerWithInputEnabled)
         {
-            DisplayErrorMessage();
+            DisplayErrorMessage("active player must be player with input enabled");
         }
 
-        // camera must follow player with input enabled
         if (!playerWithInputEnabled.transform.Find("PlayerCameraRoot").transform.parent.name.Equals(playerFollowCamera.Follow.parent.name))
         {
-            DisplayErrorMessage();
+            DisplayErrorMessage("camera must follow player with input enabled");
         }
 
-        // ball cannot be lower than the field
-        if (scriptBall.transform.position.y < 0)
+        if (scriptBall.transform.position.y < 0 && 
+            scriptBall.transform.position.x > FIELD_BOUNDARY_LOWER_X &&
+            scriptBall.transform.position.x < FIELD_BOUNDARY_UPPER_X && 
+            scriptBall.transform.position.z > FIELD_BOUNDARY_LOWER_Z &&
+            scriptBall.transform.position.z < FIELD_BOUNDARY_UPPER_Z)
         {
-            DisplayErrorMessage();
+            DisplayErrorMessage("ball in the field cannot be lower than 0");
         }
     }
 
-    private void DisplayErrorMessage()
+    private void DisplayErrorMessage(string message)
     {
-        Debug.Log("An error has occurred!");
+        Debug.Log("An error has occurred: " + message);
     }
 
     private int OtherTeam(int team)

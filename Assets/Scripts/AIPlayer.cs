@@ -6,6 +6,7 @@ using UnityEngine;
 public class AIPlayer : MonoBehaviour
 {
     [SerializeField] private float movementSpeed = 4.0f;
+    [SerializeField] private float shootingPower = 0.7f;
     private Transform transformBall;
     private Player scriptPlayer;
     private Animator animator;
@@ -62,7 +63,7 @@ public class AIPlayer : MonoBehaviour
         // shoot
         if (scriptPlayer.HasBall && distanceToGoal < 15)
         {
-            scriptPlayer.ShootingPower = 0.7f;
+            scriptPlayer.ShootingPower = shootingPower;
             animator.SetFloat("Speed", 0);
             animator.SetFloat("MotionSpeed", 0);
             scriptPlayer.Shoot();
