@@ -7,17 +7,37 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
+public enum GameMode_
+{
+    PlayerVsPlayer,
+    PlayerVsPc,
+    TwoPlayersVsPc
+}
+
+public enum GameState_
+{
+    Playing,
+    KickOff,
+    FreeKick,
+    ThrowIn,
+    Cheering
+}
+
 public class Game : MonoBehaviour
 {
-    Slider sliderPowerBar;
-    GameObject powerBar;
     public static Game Instance;
+
     public const float HAVING_BALL_SLOWDOWN_FACTOR = 0.8f;
     public const float PLAYER_Y_POSITION = 0.5f;
     public const float FIELD_BOUNDARY_LOWER_X = -52.6f;
     public const float FIELD_BOUNDARY_UPPER_X = 52.3f;
     public const float FIELD_BOUNDARY_LOWER_Z = -25f;
     public const float FIELD_BOUNDARY_UPPER_Z = 25f;
+    public const float MINIMUM_DISTANCE_FREEKICK = 18f;
+
+    public const float CHEERING_DURATION = 4.0f;
+    public const float KICKOFF_DURATION = 13.0f;
+
     [SerializeField] private GameObject playerSpawnPosition1;
     [SerializeField] private GameObject playerSpawnPosition2;
     [SerializeField] private GameObject playerSpawnPosition3;
@@ -29,6 +49,10 @@ public class Game : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
+    private GameMode_ gameMode;
+    private GameState_ gameState;
+    private Slider sliderPowerBar;
+    private GameObject powerBar;
     private Ball scriptBall;
     private AudioSource soundCheer;
     private AudioSource soundWhistle;
@@ -40,32 +64,25 @@ public class Game : MonoBehaviour
     private int teamWithBall;
     private int teamLastTouched;
     private int teamKickOff;
-    private bool waitingForKickOff;
-    private float waitingTimeKickOff;
+    private float animationTimeLeft;
     private float goalTextColorAlpha;
-    List<Team> teams = new();
+    private List<Team> teams = new();
     private Transform[] goals = new Transform[2];
     private Vector3 kickOffPosition = new Vector3(0, PLAYER_Y_POSITION, 0.1f);
+    private Image crosshairAim;
 
     public Player PassDestinationPlayer { get => passDestinationPlayer; set => passDestinationPlayer = value; }
     public Player PlayerWithBall { get => playerWithBall; }
     public int TeamWithBall { get => teamWithBall; set => teamWithBall = value; }
     public int TeamLastTouched { get => teamLastTouched; set => teamLastTouched = value; }
-    public bool WaitingForKickOff { get => waitingForKickOff; set => waitingForKickOff = value; }
     public Player ActiveHumanPlayer { get => activeHumanPlayer; set => activeHumanPlayer = value; }
     public List<Team> Teams { get => teams; set => teams = value; }
     public Vector3 KickOffPosition { get => kickOffPosition; set => kickOffPosition = value; }
+    public GameMode_ GameMode { get => gameMode; set => gameMode = value; }
+    public GameState_ GameState { get => gameState; set => gameState = value; }
 
-    public void Awake()
+    private void InitGamePlayerVsPC()
     {
-        Instance = this;
-        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
-        soundCheer = GameObject.Find("Sound/cheer").GetComponent<AudioSource>();
-        soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
-        scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
-        sliderPowerBar = GameObject.Find("Canvas/Panel/PowerBar").GetComponent<Slider>();
-        powerBar = GameObject.Find("Canvas/Panel/PowerBar");
-
         Team newTeam = new Team(0, true);
         teams.Add(newTeam);
         GameObject spawnedPlayer = Instantiate(pfPlayer1, playerSpawnPosition1.transform.position, Quaternion.identity);
@@ -87,7 +104,7 @@ public class Game : MonoBehaviour
 
         newTeam = new Team(1, false);
         teams.Add(newTeam);
-        
+
         spawnedPlayer = Instantiate(pfPlayer3, playerSpawnPosition3.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Arnoud";
         spawnedPlayer.GetComponent<Player>().Number = 0;
@@ -101,14 +118,30 @@ public class Game : MonoBehaviour
 
         spawnedPlayer.GetComponent<Player>().FellowPlayer = spawnedPlayer2.GetComponent<Player>();
         spawnedPlayer2.GetComponent<Player>().FellowPlayer = spawnedPlayer.GetComponent<Player>();
-        
+    }
+
+    public void Awake()
+    {
+        Instance = this;
+        crosshairAim = GameObject.Find("Canvas/CrosshairAim").GetComponent<Image>();
+        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
+        soundCheer = GameObject.Find("Sound/cheer").GetComponent<AudioSource>();
+        soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
+        scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
+        sliderPowerBar = GameObject.Find("Canvas/Panel/PowerBar").GetComponent<Slider>();
+        powerBar = GameObject.Find("Canvas/Panel/PowerBar");
         goals[0] = GameObject.Find("Goal1").transform;
         goals[1] = GameObject.Find("Goal2").transform;
         powerBar.SetActive(false);
+
+        if (GlobalParams.GameMode.Equals(GameMode_.PlayerVsPc))
+        {
+            InitGamePlayerVsPC();
+        }
     }
     public void Start()
     {
-        WaitForKickOff(3.0f);
+        SetGameState(GameState_.KickOff);
     }
 
     public void ResetPlayersAndBall()
@@ -172,32 +205,44 @@ public class Game : MonoBehaviour
         textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
         playerLastTouchedBall.ScoreGoal();
 
-        WaitForKickOff(5.0f);
+        SetGameState(GameState_.KickOff);
     }
 
-    private void WaitForKickOff(float seconds)
+    public void SetGameState(GameState_ newGameState)
     {
-        ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
-        ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
-        waitingForKickOff = true;
-        waitingTimeKickOff = seconds;
+        gameState = newGameState;
+
+        switch (newGameState)
+        {
+            case GameState_.KickOff:
+                ResetPlayersAndBall();
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
+                animationTimeLeft = KICKOFF_DURATION;
+                break;
+        }
     }
 
     public void Update()
     {
-        if (waitingTimeKickOff > 0)
+        if (animationTimeLeft > 0)
         {
-            waitingTimeKickOff -= Time.deltaTime;
-            if (waitingTimeKickOff < 3)
+            animationTimeLeft -= Time.deltaTime;
+
+            if (animationTimeLeft <= 0)
             {
-                ResetPlayersAndBall();
-            }
-            if (waitingTimeKickOff <= 0)
-            {
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
-                waitingForKickOff = false;
-                soundWhistle.Play();
+                if (gameState == GameState_.Cheering)
+                {
+                    SetGameState(GameState_.KickOff);
+                }
+                else if (gameState == GameState_.KickOff)
+                {
+                    animationTimeLeft = KICKOFF_DURATION;
+                    ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
+                    ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
+                    SetGameState(GameState_.Playing);
+                    soundWhistle.Play();
+                }
             }
         }
         if (goalTextColorAlpha > 0)
@@ -275,11 +320,13 @@ public class Game : MonoBehaviour
     {
         powerBar.SetActive(true);
         sliderPowerBar.value = value;
+        crosshairAim.enabled = true;
     }
 
     public void RemovePowerBar()
     {
         powerBar.SetActive(false);
+        crosshairAim.enabled = false;
     }
 
     // Move players that are too close in the direction of the center of the field
@@ -294,7 +341,7 @@ public class Game : MonoBehaviour
                     float distance = (player.transform.position-playerToTakeDistanceFrom.transform.position).magnitude;
                     if (distance < 8)
                     {
-                        Vector3 moveToDistanceDirection = (Vector3.zero - playerToTakeDistanceFrom.transform.position).normalized * 8;
+                        Vector3 moveToDistanceDirection = (Vector3.zero - playerToTakeDistanceFrom.transform.position).normalized * MINIMUM_DISTANCE_FREEKICK;
                         player.SetPosition(new Vector3(player.transform.position.x + moveToDistanceDirection.x,
                                                 player.transform.position.y, player.transform.position.z + moveToDistanceDirection.z));
                     }

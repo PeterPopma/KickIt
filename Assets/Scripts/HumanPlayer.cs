@@ -2,6 +2,7 @@ using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HumanPlayer : MonoBehaviour
 {
@@ -17,6 +18,11 @@ public class HumanPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Game.Instance.GameState != GameState_.Playing)
+        {
+            return;
+        }
+
         if (starterAssetsInputs.pass)
         {
             starterAssetsInputs.pass = false;

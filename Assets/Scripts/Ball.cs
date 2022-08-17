@@ -63,6 +63,7 @@ public class Ball : MonoBehaviour
         if (isThrowIn)
         {
             player.TakeThrowIn = true;
+            transform.position = new Vector3(transform.position.x, transform.position.y + 3, transform.position.z);
         }
         else
         {
@@ -70,6 +71,7 @@ public class Ball : MonoBehaviour
         }
         // move players that are too close
         Game.Instance.SetMinimumDistanceOtherPlayers(player);
+        Game.Instance.SetGameState(GameState_.ThrowIn);
     }
 
     private void CheckBallOutOfField()
@@ -141,15 +143,15 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.y<0)
+        if (Game.Instance.GameState != GameState_.Playing)
         {
-            int error = 1;
+            return;
         }
 
         if (ballOutOfFieldTimeOut>0)
         {
             ballOutOfFieldTimeOut -= Time.deltaTime;
-            if (ballOutOfFieldTimeOut <=0 && !Game.Instance.WaitingForKickOff)
+            if (ballOutOfFieldTimeOut <=0)
             {
                 TakeThrowIn();
             }

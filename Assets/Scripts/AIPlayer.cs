@@ -14,13 +14,17 @@ public class AIPlayer : MonoBehaviour
     private Vector3 targetGoalPosition;
     private Vector3 ownGoalPosition;
     private Vector3[] attackTargetLocation = new Vector3[2];
-    
-    void Start()
+
+    void Awake()
     {
         transformBall = GameObject.Find("Ball").transform;
         scriptPlayer = GetComponent<Player>();
         animator = GetComponent<Animator>();
         playerBallPosition = transform.Find("BallPosition");
+    }
+
+    void Start()
+    {
         targetGoalPosition = new Vector3(51.93f, Game.PLAYER_Y_POSITION, 0.24f);
         ownGoalPosition = new Vector3(-52.37f, Game.PLAYER_Y_POSITION, -0.22f);
         attackTargetLocation[0] = new Vector3(38f, Game.PLAYER_Y_POSITION, 10f);
@@ -29,11 +33,15 @@ public class AIPlayer : MonoBehaviour
 
     void Update()
     {
-        if (Game.Instance.WaitingForKickOff)
+        if (Game.Instance.GameState != GameState_.Playing)
         {
             return;
         }
 
+        if (scriptPlayer.Team==null)
+        {
+            int error = 1;
+        }
         if (Game.Instance.TeamWithBall != scriptPlayer.Team.Number)
         {
             DefendMode();
@@ -48,8 +56,10 @@ public class AIPlayer : MonoBehaviour
     private void AttackMode()
     {
         // move to target goal
-        Vector3 movedirection = attackTargetLocation[scriptPlayer.Number] - new Vector3(playerBallPosition.position.x, 0, playerBallPosition.position.z);
-        float distanceToGoal = movedirection.magnitude;
+        Vector3 movedirection = new Vector3(0,0,0.1f);
+        float distanceToGoal = 20;
+        //        Vector3 movedirection = attackTargetLocation[scriptPlayer.Number] - new Vector3(playerBallPosition.position.x, 0, playerBallPosition.position.z);
+        //float distanceToGoal = movedirection.magnitude;
         float speed = movementSpeed;
         if (scriptPlayer.HasBall)
         {

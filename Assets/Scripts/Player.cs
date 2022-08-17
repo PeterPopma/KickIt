@@ -9,9 +9,11 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
+    public const float SHOOTING_DURATION = 0.5f;
+    public const float THROWIN_DURATION = 3.0f;
+    
+    [SerializeField] private Transform ballHandPosition;
     int number;
-    private const int LAYER_SHOOT = 1;
-    private const int LAYER_CHEER = 2;
     private Player fellowPlayer;
     private Ball scriptBall;
     private Rigidbody rigidbodyBall;
@@ -24,16 +26,16 @@ public class Player : MonoBehaviour
     private AudioSource soundDribble;
     private AudioSource soundShoot;
     private AudioSource soundSteal;
+    private Animation animationPlaying;
     private float distanceSinceLastDribble;
     private bool hasBall;
-    private float timeShot;
+    private float timeSincePlayerAction;        // time since this player had performed an action (to keep track of animations, etc.)
     private float stealDelay;       // after the player has lost the ball, he cannot steal it back for some time
-    private float cheering;
-    private float updateTime;
     private Team team;
-    private bool takeFreeKick;
-    private bool takeThrowIn;
+    private bool takingFreeKick;
+    private bool takingThrowIn;
     private float shootingPower;
+
 
     public bool HasBall { get => hasBall; set => hasBall = value; }
     public Transform PlayerBallPosition { get => playerBallPosition; set => playerBallPosition = value; }
@@ -41,8 +43,8 @@ public class Player : MonoBehaviour
     public Team Team { get => team; set => team = value; }
     public Player FellowPlayer { get => fellowPlayer; set => fellowPlayer = value; }
     public Vector3 InitialPosition { get => initialPosition; set => initialPosition = value; }
-    public bool TakeFreeKick { get => takeFreeKick; set => takeFreeKick = value; }
-    public bool TakeThrowIn { get => takeThrowIn; set => takeThrowIn = value; }
+    public bool TakeFreeKick { get => takingFreeKick; set => takingFreeKick = value; }
+    public bool TakeThrowIn { get => takingThrowIn; set => takingThrowIn = value; }
     public int Number { get => number; set => number = value; }
     public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
     public float ShootingPower { get => shootingPower; set => shootingPower = value; }
@@ -62,52 +64,82 @@ public class Player : MonoBehaviour
         initialPosition = transform.position;
     }
 
+    private void HandleAnimations()
+    {
+        if (animationPlaying != null)
+        {
+            if (animationPlaying.FadeIn)
+            {
+                animator.SetLayerWeight(animationPlaying.Layer, Mathf.Lerp(animator.GetLayerWeight(animationPlaying.Layer), 1f, Time.deltaTime * 10f));
+            }
+
+            if (Time.time - animationPlaying.TimeStarted > animationPlaying.Duration)
+            {
+                if (animationPlaying.FadeOut)
+                {
+                    animator.SetLayerWeight(animationPlaying.Layer, Mathf.Lerp(animator.GetLayerWeight(animationPlaying.Layer), 0f, Time.deltaTime * 10f));
+                }
+                else
+                {
+                    animator.SetLayerWeight(animationPlaying.Layer, 0);
+                }
+
+                if (animator.GetLayerWeight(animationPlaying.Layer)==0)
+                {
+                    animationPlaying = null;
+                }
+            }
+        }
+
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (cheering > 0)
-        {
-            cheering -= Time.deltaTime;
-        }
-        else
-        {
-            animator.SetLayerWeight(LAYER_CHEER, Mathf.Lerp(animator.GetLayerWeight(LAYER_CHEER), 0f, Time.deltaTime * 10f));
-        }
+        HandleAnimations();
 
         if (stealDelay > 0) {
             stealDelay -= Time.deltaTime;
-        }
-
-        updateTime += Time.deltaTime;
-        if (updateTime > 1.0f)
-        {
-            updateTime = 0f;
         }
 
         if (HasBall)
         {
             DribbleWithBall();
         }
-        else if (Game.Instance.PassDestinationPlayer != fellowPlayer && timeShot == 0 && stealDelay <= 0)
+        else if (Game.Instance.PassDestinationPlayer != fellowPlayer && timeSincePlayerAction == 0 && stealDelay <= 0)
         {
             CheckTakeBall();
         }
-        if (timeShot > 0)
+        if (timeSincePlayerAction > 0)      // ball has been shot or thrown
         {
-            // shoot ball
-            if (HasBall/* && Time.time - timeShot > 0.2*/)
+            if (takingThrowIn)
             {
-                TakeShot();
+                // release ball for throw-in
+                if (Time.time - timeSincePlayerAction > 10.5)
+                {
+                    Game.Instance.SetGameState(GameState_.Playing);
+                    TakeShot();
+                }
+                // finished throwing ball
+                if (Time.time - timeSincePlayerAction > THROWIN_DURATION)
+                {
+                    timeSincePlayerAction = 0;
+                }
             }
-            // finished kicking animation
-            if (Time.time - timeShot > 0.5)
+            else
             {
-                timeShot = 0;
+                // shoot ball
+                if (HasBall/* && Time.time - timeShot > 0.2*/)
+                {
+                    TakeShot();
+                }
+                // finished shooting ball
+                if (Time.time - timeSincePlayerAction > SHOOTING_DURATION)
+                {
+                    timeSincePlayerAction = 0;
+                }
             }
-        }
-        else
-        {
-            animator.SetLayerWeight(LAYER_SHOOT, Mathf.Lerp(animator.GetLayerWeight(LAYER_SHOOT), 0f, Time.deltaTime * 10f));
+
         }
     }
 
@@ -149,17 +181,22 @@ public class Player : MonoBehaviour
 
     public void ScoreGoal()
     {
-        cheering = 2.0f;
-        animator.SetLayerWeight(LAYER_CHEER, 1f);
+        animationPlaying = new Animation(animator, Game.CHEERING_DURATION, false, true, Animation.LAYER_CHEER, "Cheer");
     }
 
     public void Shoot()
     {
         if (HasBall)
         {
-            timeShot = Time.time;
-            animator.Play("Shoot", LAYER_SHOOT, 0f);
-            animator.SetLayerWeight(LAYER_SHOOT, 1f);
+            timeSincePlayerAction = Time.time;
+            if (takingThrowIn)
+            {
+                animationPlaying = new Animation(animator, THROWIN_DURATION, false, true, Animation.LAYER_THROW_IN, "ThrowIn");
+            }
+            else
+            {
+                animationPlaying = new Animation(animator, SHOOTING_DURATION, false, true, Animation.LAYER_SHOOT, "Shoot");
+            }
         }
     }
 
@@ -178,11 +215,10 @@ public class Player : MonoBehaviour
         if (HasBall && Game.Instance.PassDestinationPlayer == null)
         {
             transform.LookAt(fellowPlayer.transform.position);
-            timeShot = Time.time;
+            timeSincePlayerAction = Time.time;
             soundShoot.Play();
             LooseBall();
-            animator.Play("Shoot", LAYER_SHOOT, 0f);
-            animator.SetLayerWeight(LAYER_SHOOT, 1f);
+            animationPlaying = new Animation(animator, SHOOTING_DURATION, false, true, Animation.LAYER_SHOOT, "Shoot");
             scriptBall.Pass(this);
         }
     }
