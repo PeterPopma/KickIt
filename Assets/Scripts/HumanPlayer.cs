@@ -1,37 +1,32 @@
-using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HumanPlayer : MonoBehaviour
 {
     Player scriptPlayer;
-    private StarterAssetsInputs starterAssetsInputs;
+    private InputSystem inputSystem;
 
     void Awake()
     {
-        starterAssetsInputs = GetComponent<StarterAssetsInputs>();
+        inputSystem = GetComponent<InputSystem>();
         scriptPlayer = GetComponent<Player>();
     }
-    
-    // Update is called once per frame
+
     void Update()
     {
-        if (Game.Instance.GameState != GameState_.Playing)
+        if (scriptPlayer.HasBall &&
+            (Game.Instance.GameState == GameState_.Playing ||
+            (Game.Instance.GameState == GameState_.BringingBallIn && 
+            (scriptPlayer.DoingKick || scriptPlayer.DoingThrow))))
         {
-            return;
-        }
+            if (inputSystem.pass)
+            {
+                inputSystem.pass = false;
+                scriptPlayer.Pass();
+            }
 
-        if (starterAssetsInputs.pass)
-        {
-            starterAssetsInputs.pass = false;
-            scriptPlayer.Pass();
-        }
-
-        if (starterAssetsInputs.shoot)
-        {
-            if (scriptPlayer.HasBall)
+            if (inputSystem.shoot)
             {
                 scriptPlayer.ShootingPower += 1.5f * Time.deltaTime;
                 Game.Instance.SetPowerBar(scriptPlayer.ShootingPower);
@@ -40,10 +35,10 @@ public class HumanPlayer : MonoBehaviour
                     scriptPlayer.ShootingPower = 1;
                 }
             }
-        }
-        else if (scriptPlayer.ShootingPower>0)
-        {
-            scriptPlayer.Shoot();
+            else if (scriptPlayer.ShootingPower > 0)
+            {
+                scriptPlayer.Shoot();
+            }
         }
     }
 }

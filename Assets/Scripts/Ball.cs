@@ -45,7 +45,7 @@ public class Ball : MonoBehaviour
         transform.position = new Vector3(-0.1f, BALL_GROUND_POSITION_Y, -0.049f);
     }
 
-    private void TakeThrowIn()
+    private void TakeThrowInOrGoalKick()
     {
         if (Game.Instance.PlayerWithBall != null)
         {
@@ -59,19 +59,23 @@ public class Ball : MonoBehaviour
         player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
         // Look in the directon of the field. Otherwise the ball will be out of field again.
         player.transform.LookAt(Game.Instance.KickOffPosition);
+        player.TimePlayerActionRequested = Time.time;
         Game.Instance.SetPlayerWithBall(player);
+        Game.Instance.NextGameState = GameState_.BringingBallIn;
+        Game.Instance.SetGameState(GameState_.WaitingForWhistle);
         if (isThrowIn)
         {
-            player.TakeThrowIn = true;
+            // On throw-in ball is higher
             transform.position = new Vector3(transform.position.x, transform.position.y + 3, transform.position.z);
+            player.DoingThrow = true;
         }
         else
         {
-            player.TakeFreeKick = true;
+            player.DoingKick = true;
         }
+
         // move players that are too close
         Game.Instance.SetMinimumDistanceOtherPlayers(player);
-        Game.Instance.SetGameState(GameState_.ThrowIn);
     }
 
     private void CheckBallOutOfField()
@@ -153,7 +157,7 @@ public class Ball : MonoBehaviour
             ballOutOfFieldTimeOut -= Time.deltaTime;
             if (ballOutOfFieldTimeOut <=0)
             {
-                TakeThrowIn();
+                TakeThrowInOrGoalKick();
             }
         }
         else

@@ -1,4 +1,3 @@
-using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +13,9 @@ public class AIPlayer : MonoBehaviour
     private Vector3 targetGoalPosition;
     private Vector3 ownGoalPosition;
     private Vector3[] attackTargetLocation = new Vector3[2];
+    private float speed;
+
+    public float Speed { get => speed; set => speed = value; }
 
     void Awake()
     {
@@ -40,7 +42,7 @@ public class AIPlayer : MonoBehaviour
 
         if (scriptPlayer.Team==null)
         {
-            int error = 1;
+            Debug.Log("AI player does not belong to a team!");
         }
         if (Game.Instance.TeamWithBall != scriptPlayer.Team.Number)
         {
@@ -56,11 +58,11 @@ public class AIPlayer : MonoBehaviour
     private void AttackMode()
     {
         // move to target goal
-        Vector3 movedirection = new Vector3(0,0,0.1f);
+        speed = movementSpeed;
+        Vector3 movedirection = new Vector3(0.1f, 0, 0);
         float distanceToGoal = 20;
         //        Vector3 movedirection = attackTargetLocation[scriptPlayer.Number] - new Vector3(playerBallPosition.position.x, 0, playerBallPosition.position.z);
         //float distanceToGoal = movedirection.magnitude;
-        float speed = movementSpeed;
         if (scriptPlayer.HasBall)
         {
             speed *= Game.HAVING_BALL_SLOWDOWN_FACTOR;
@@ -68,16 +70,16 @@ public class AIPlayer : MonoBehaviour
         Vector3 moveSpeed = new Vector3(movedirection.normalized.x * speed * Time.deltaTime, 0, movedirection.normalized.z * speed * Time.deltaTime);
         transform.position += moveSpeed;
         transform.LookAt(targetGoalPosition);
-        animator.SetFloat("Speed", speed);
-        animator.SetFloat("MotionSpeed", 1);
+        
         // shoot
         if (scriptPlayer.HasBall && distanceToGoal < 15)
         {
+            speed = 0;
             scriptPlayer.ShootingPower = shootingPower;
-            animator.SetFloat("Speed", 0);
-            animator.SetFloat("MotionSpeed", 0);
             scriptPlayer.Shoot();
         }
+
+        animator.SetFloat("Speed", speed * 2);
     }
 
     // player closest to ball tries to steal it
@@ -96,6 +98,7 @@ public class AIPlayer : MonoBehaviour
 
     private void MoveToBetweenGoalAndPlayerClosestToGoal()
     {
+        speed = movementSpeed;
         Vector3 mostDangerousEnemyPlayer = Game.Instance.PlayerClosestToLocation(0, ownGoalPosition).transform.position;
         Vector3 targetLocation = Vector3.Lerp(ownGoalPosition, mostDangerousEnemyPlayer, 0.5f);
         Vector3 movedirection = targetLocation - playerBallPosition.position;
@@ -111,19 +114,18 @@ public class AIPlayer : MonoBehaviour
             transform.LookAt(mostDangerousEnemyPlayer);
         }
 
-        animator.SetFloat("Speed", moveSpeed.magnitude * 200);
-        animator.SetFloat("MotionSpeed", 1);
+        animator.SetFloat("Speed", speed * 2);
     }
 
     private void MoveToBall()
     {
+        speed = movementSpeed;
         Vector3 lookAtPosition = transformBall.position;
         lookAtPosition.y = transform.position.y;
         transform.LookAt(lookAtPosition);
         Vector3 movedirection = transformBall.position - playerBallPosition.position;
         Vector3 moveSpeed = new Vector3(movedirection.normalized.x * movementSpeed * Time.deltaTime, 0, movedirection.normalized.z * movementSpeed * Time.deltaTime);
         transform.position += moveSpeed;
-        animator.SetFloat("Speed", moveSpeed.magnitude * 200);
-        animator.SetFloat("MotionSpeed", 1);
+        animator.SetFloat("Speed", speed * 2);
     }
 }

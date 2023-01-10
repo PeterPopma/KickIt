@@ -1,5 +1,4 @@
 using Cinemachine;
-using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -17,10 +16,11 @@ public enum GameMode_
 public enum GameState_
 {
     Playing,
-    KickOff,
-    FreeKick,
-    ThrowIn,
-    Cheering
+    WaitingForWhistle,
+    BringingBallIn,
+    Cheering,
+    Replay,
+    MatchOver
 }
 
 public class Game : MonoBehaviour
@@ -36,8 +36,9 @@ public class Game : MonoBehaviour
     public const float MINIMUM_DISTANCE_FREEKICK = 18f;
 
     public const float CHEERING_DURATION = 4.0f;
-    public const float KICKOFF_DURATION = 13.0f;
+    public const float WAITING_FOR_WHISTLE_DURATION = 2.0f;
 
+    [SerializeField] private Recorder recorder;
     [SerializeField] private GameObject playerSpawnPosition1;
     [SerializeField] private GameObject playerSpawnPosition2;
     [SerializeField] private GameObject playerSpawnPosition3;
@@ -49,8 +50,11 @@ public class Game : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
+    [SerializeField] private TextMeshProUGUI textReplay;
+    [SerializeField] private Transform[] goals;
     private GameMode_ gameMode;
     private GameState_ gameState;
+    private GameState_ nextGameState;
     private Slider sliderPowerBar;
     private GameObject powerBar;
     private Ball scriptBall;
@@ -64,12 +68,12 @@ public class Game : MonoBehaviour
     private int teamWithBall;
     private int teamLastTouched;
     private int teamKickOff;
-    private float animationTimeLeft;
+    private float timeGameStateStarted;
     private float goalTextColorAlpha;
     private List<Team> teams = new();
-    private Transform[] goals = new Transform[2];
     private Vector3 kickOffPosition = new Vector3(0, PLAYER_Y_POSITION, 0.1f);
     private Image crosshairAim;
+    private int goalOfTeamLastScored;
 
     public Player PassDestinationPlayer { get => passDestinationPlayer; set => passDestinationPlayer = value; }
     public Player PlayerWithBall { get => playerWithBall; }
@@ -80,20 +84,26 @@ public class Game : MonoBehaviour
     public Vector3 KickOffPosition { get => kickOffPosition; set => kickOffPosition = value; }
     public GameMode_ GameMode { get => gameMode; set => gameMode = value; }
     public GameState_ GameState { get => gameState; set => gameState = value; }
+    public GameState_ NextGameState { get => nextGameState; set => nextGameState = value; }
+    public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
 
     private void InitGamePlayerVsPC()
     {
-        Team newTeam = new Team(0, true);
+        Team newTeam = new(0, true);
         teams.Add(newTeam);
+
         GameObject spawnedPlayer = Instantiate(pfPlayer1, playerSpawnPosition1.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Peter";
+        spawnedPlayer.GetComponent<Player>().IsHuman = true;
         spawnedPlayer.GetComponent<Player>().Number = 0;
         spawnedPlayer.GetComponent<Player>().Team = newTeam;
         spawnedPlayer.GetComponent<Player>().Activate();
         newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
         playerFollowCamera.Follow = spawnedPlayer.transform.Find("PlayerCameraRoot").transform;
+
         GameObject spawnedPlayer2 = Instantiate(pfPlayer2, playerSpawnPosition2.transform.position, Quaternion.identity);
         spawnedPlayer2.name = "Mark";
+        spawnedPlayer2.GetComponent<Player>().IsHuman = true;
         spawnedPlayer2.GetComponent<Player>().Number = 1;
         spawnedPlayer2.GetComponent<Player>().Team = newTeam;
         spawnedPlayer2.GetComponent<PlayerInput>().enabled = false;
@@ -107,11 +117,14 @@ public class Game : MonoBehaviour
 
         spawnedPlayer = Instantiate(pfPlayer3, playerSpawnPosition3.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Arnoud";
+        spawnedPlayer.GetComponent<Player>().IsHuman = false;
         spawnedPlayer.GetComponent<Player>().Number = 0;
         spawnedPlayer.GetComponent<Player>().Team = newTeam;
         newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
+
         spawnedPlayer2 = Instantiate(pfPlayer4, playerSpawnPosition4.transform.position, Quaternion.identity);
         spawnedPlayer2.name = "Thirza";
+        spawnedPlayer2.GetComponent<Player>().IsHuman = false;
         spawnedPlayer2.GetComponent<Player>().Number = 1;
         spawnedPlayer2.GetComponent<Player>().Team = newTeam;
         newTeam.Players.Add(spawnedPlayer2.GetComponent<Player>());
@@ -130,8 +143,6 @@ public class Game : MonoBehaviour
         scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
         sliderPowerBar = GameObject.Find("Canvas/Panel/PowerBar").GetComponent<Slider>();
         powerBar = GameObject.Find("Canvas/Panel/PowerBar");
-        goals[0] = GameObject.Find("Goal1").transform;
-        goals[1] = GameObject.Find("Goal2").transform;
         powerBar.SetActive(false);
 
         if (GlobalParams.GameMode.Equals(GameMode_.PlayerVsPc))
@@ -141,7 +152,7 @@ public class Game : MonoBehaviour
     }
     public void Start()
     {
-        SetGameState(GameState_.KickOff);
+        KickOff();
     }
 
     public void ResetPlayersAndBall()
@@ -151,12 +162,14 @@ public class Game : MonoBehaviour
             foreach(Player player in team.Players)
             {
                 player.SetPosition(player.InitialPosition);
-                player.transform.LookAt(goals[player.Team.Number]);
+                player.LookAt(goals[OtherTeam(player.Team.Number)]);
             }
         }
         // Set player to kick off
         Vector3 position = new(0.5f - teamKickOff, KickOffPosition.y, kickOffPosition.z);
         teams[teamKickOff].Players[0].SetPosition(position);
+        SetPlayerWithBall(teams[teamKickOff].Players[0]);
+        teams[teamKickOff].Players[0].DoingKick = true;
         scriptBall.BallOutOfFieldTimeOut = 0;
         scriptBall.PutOnCenterSpot();
         scriptBall.Rigidbody.velocity = Vector3.zero;
@@ -196,55 +209,74 @@ public class Game : MonoBehaviour
         return closestPlayer;
     }
 
-    public void ScoreGoal(int team)
+    public void ScoreGoal(int goalOfTeam)
     {
-        teams[team].Score++;
-        teamKickOff = OtherTeam(team);
+        goalOfTeamLastScored = goalOfTeam;
+        int teamScored = goalOfTeam==0 ? 1 : 0;
+        teams[teamScored].Score++;
+        teamKickOff = OtherTeam(teamScored);
         goalTextColorAlpha = 1;
         soundCheer.Play();
         textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
         playerLastTouchedBall.ScoreGoal();
 
-        SetGameState(GameState_.KickOff);
+        SetGameState(GameState_.Cheering);
+    }
+
+    public void KickOff()
+    {
+        ResetPlayersAndBall();
+        ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
+        ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
+        nextGameState = GameState_.BringingBallIn;
+        SetGameState(GameState_.WaitingForWhistle);
     }
 
     public void SetGameState(GameState_ newGameState)
     {
         gameState = newGameState;
+        timeGameStateStarted = Time.time;
 
         switch (newGameState)
         {
-            case GameState_.KickOff:
-                ResetPlayersAndBall();
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
-                animationTimeLeft = KICKOFF_DURATION;
+            case GameState_.WaitingForWhistle:
+                break;
+            case GameState_.Cheering:
                 break;
         }
     }
 
     public void Update()
     {
-        if (animationTimeLeft > 0)
+        if (gameState == GameState_.Replay && Time.time%1<0.5)
         {
-            animationTimeLeft -= Time.deltaTime;
+            textReplay.text = GameState_.Replay.ToString();
+        }
+        else
+        {
+            textReplay.text = "";
+        }
 
-            if (animationTimeLeft <= 0)
+        if (gameState == GameState_.WaitingForWhistle)
+        {
+            if (Time.time - timeGameStateStarted > WAITING_FOR_WHISTLE_DURATION)
             {
-                if (gameState == GameState_.Cheering)
-                {
-                    SetGameState(GameState_.KickOff);
-                }
-                else if (gameState == GameState_.KickOff)
-                {
-                    animationTimeLeft = KICKOFF_DURATION;
-                    ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
-                    ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
-                    SetGameState(GameState_.Playing);
-                    soundWhistle.Play();
-                }
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
+                soundWhistle.Play();
+                SetGameState(nextGameState);
             }
         }
+
+        if (gameState == GameState_.Cheering)
+        {
+            if (Time.time - timeGameStateStarted > CHEERING_DURATION)
+            {
+                playerLastTouchedBall.Animator.SetLayerWeight(Animation.LAYER_CHEER, 0);
+                SetGameState(GameState_.Replay);
+            }
+        }
+
         if (goalTextColorAlpha > 0)
         {
             goalTextColorAlpha -= Time.deltaTime;
@@ -320,7 +352,7 @@ public class Game : MonoBehaviour
     {
         powerBar.SetActive(true);
         sliderPowerBar.value = value;
-        crosshairAim.enabled = true;
+        //crosshairAim.enabled = true;
     }
 
     public void RemovePowerBar()
