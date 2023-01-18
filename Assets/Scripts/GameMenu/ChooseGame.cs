@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using TMPro;
 using System;
 
 public class ChooseGame : MonoBehaviour
@@ -23,9 +22,9 @@ public class ChooseGame : MonoBehaviour
     public void SetGameMode(GameMode_ gameMode)
     {
         selectedGameMode = gameMode;        
-        button2PlayersVsPc.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.TwoPlayersVsPc) ? Color.white : Color.gray; ;
-        buttonPlayerVsPC.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.PlayerVsPc) ? Color.white : Color.gray; ;
-        buttonPlayerVsPlayer.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.PlayerVsPlayer) ? Color.white : Color.gray; ;
+        button2PlayersVsPc.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.TwoPlayersVsPc) ? Color.white : Color.gray;
+        buttonPlayerVsPC.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.PlayerVsPc) ? Color.white : Color.gray;
+        buttonPlayerVsPlayer.GetComponent<Image>().color = selectedGameMode.Equals(GameMode_.PlayerVsPlayer) ? Color.white : Color.gray;
     }
 
     public void OnGameModeButtonClick()

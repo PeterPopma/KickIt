@@ -65,9 +65,11 @@ public class Ball : MonoBehaviour
         Game.Instance.SetGameState(GameState_.WaitingForWhistle);
         if (isThrowIn)
         {
-            // On throw-in ball is higher
-            transform.position = new Vector3(transform.position.x, transform.position.y + 3, transform.position.z);
+            player.Animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
+            player.Animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
+            transform.position = player.BallHandPosition.position;
             player.DoingThrow = true;
+            rigidbody.isKinematic = true;
         }
         else
         {
@@ -158,6 +160,7 @@ public class Ball : MonoBehaviour
             if (ballOutOfFieldTimeOut <=0)
             {
                 TakeThrowInOrGoalKick();
+                return;
             }
         }
         else

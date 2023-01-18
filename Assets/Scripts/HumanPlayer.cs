@@ -6,6 +6,7 @@ public class HumanPlayer : MonoBehaviour
 {
     Player scriptPlayer;
     private InputSystem inputSystem;
+    private float shootingPower;
 
     void Awake()
     {
@@ -15,29 +16,77 @@ public class HumanPlayer : MonoBehaviour
 
     void Update()
     {
-        if (scriptPlayer.HasBall &&
-            (Game.Instance.GameState == GameState_.Playing ||
-            (Game.Instance.GameState == GameState_.BringingBallIn && 
-            (scriptPlayer.DoingKick || scriptPlayer.DoingThrow))))
+        if (scriptPlayer.DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)
         {
             if (inputSystem.pass)
             {
                 inputSystem.pass = false;
-                scriptPlayer.Pass();
+                scriptPlayer.SetPlayerAction(ActionType_.ThrowinPass);
             }
 
             if (inputSystem.shoot)
             {
-                scriptPlayer.ShootingPower += 1.5f * Time.deltaTime;
-                Game.Instance.SetPowerBar(scriptPlayer.ShootingPower);
-                if (scriptPlayer.ShootingPower > 1)
+                shootingPower += 1.5f * Time.deltaTime;
+                Game.Instance.SetPowerBar(shootingPower);
+                if (shootingPower > 1)
                 {
-                    scriptPlayer.ShootingPower = 1;
+                    shootingPower = 1;
                 }
             }
-            else if (scriptPlayer.ShootingPower > 0)
+            else
             {
-                scriptPlayer.Shoot();
+                if (shootingPower > 0)
+                {
+                    scriptPlayer.SetPlayerAction(ActionType_.ThrowinShot, shootingPower);
+                }
+                shootingPower = 0;
+            }
+        }
+
+        if (Game.Instance.GameState == GameState_.Playing ||
+            (Game.Instance.GameState == GameState_.BringingBallIn && scriptPlayer.DoingKick))
+        {
+            if (scriptPlayer.HasBall)
+            {
+                if (inputSystem.pass)
+                {
+                    inputSystem.pass = false;
+                    scriptPlayer.SetPlayerAction(ActionType_.Pass);
+                }
+
+                if (inputSystem.shoot)
+                {
+                    shootingPower += 1.5f * Time.deltaTime;
+                    Game.Instance.SetPowerBar(shootingPower);
+                    if (shootingPower > 1)
+                    {
+                        shootingPower = 1;
+                    }
+                }
+                else
+                {
+                    if (shootingPower > 0)
+                    {
+                        scriptPlayer.SetPlayerAction(ActionType_.Shot, shootingPower);
+                    }
+                    shootingPower = 0;
+                }
+            }
+            else
+            {
+                if (inputSystem.pass)
+                {
+                    inputSystem.pass = false;
+                    scriptPlayer.SwitchActivePlayer();
+                }
+            }
+        }
+
+        if (Game.Instance.GameState == GameState_.Replay)
+        {
+            if (inputSystem.shoot)
+            {
+                Game.Instance.Recorder.EndReplay();
             }
         }
     }

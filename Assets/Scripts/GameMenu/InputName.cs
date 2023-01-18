@@ -25,7 +25,7 @@ public class InputName : MonoBehaviour
         if (GlobalParams.GameMode.Equals(GameMode_.PlayerVsPlayer))
         {
             textLoading.enabled = true;
-            SceneManager.LoadSceneAsync("Level1");
+            SceneManager.LoadSceneAsync("Game");
         }
         else
         {

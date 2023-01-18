@@ -16,6 +16,6 @@ public class ComputerStrength : MonoBehaviour
     public void OnStarClick()
     {
         textLoading.enabled = true;
-        SceneManager.LoadSceneAsync("Level1");
+        SceneManager.LoadSceneAsync("Game");
     }
 }

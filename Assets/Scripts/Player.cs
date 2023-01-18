@@ -8,15 +8,14 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
-    public const float KICK_DURATION = 0.5f;
-    public const float THROWIN_DURATION = 3.0f;
     public const float MAX_ACTION_DURATION = 8.0f;
 
     [SerializeField] private Transform ballHandPosition;
     private ThirdPersonController scriptThirdPersonController;
     private AIPlayer scriptAIPlayer;
+    private CinemachineVirtualCamera playerFollowCamera;
     private Team team;
-    int number;
+    private int number;
     private Player fellowPlayer;
     private Ball scriptBall;
     private Rigidbody rigidbodyBall;
@@ -25,16 +24,14 @@ public class Player : MonoBehaviour
     private Transform playerBallPosition;
     private Transform playerCameraRoot;
     private Vector3 initialPosition;
-    private Animator animator;
     private AudioSource soundDribble;
     private AudioSource soundShoot;
     private AudioSource soundSteal;
-    private Animation animationPlaying;
+    private PlayerAction playerAction;
+    private Animator animator;
     private float distanceSinceLastDribble;
     private float takeBallDelay;       // after the player has lost the ball, he cannot steal it back for some time
     private float timePlayerActionRequested;
-    private float timeLeftAnimation;
-    private float shootingPower;
     private bool hasBall;
     private bool isHuman;
     private bool doingThrow;
@@ -48,22 +45,24 @@ public class Player : MonoBehaviour
     public Vector3 InitialPosition { get => initialPosition; set => initialPosition = value; }
     public int Number { get => number; set => number = value; }
     public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
-    public float ShootingPower { get => shootingPower; set => shootingPower = value; }
     public float TimePlayerActionRequested { get => timePlayerActionRequested; set => timePlayerActionRequested = value; }
-    public Animator Animator { get => animator; set => animator = value; }
     public ThirdPersonController ScriptThirdPersonController { get => scriptThirdPersonController; set => scriptThirdPersonController = value; }
     public bool IsHuman { get => isHuman; set => isHuman = value; }
     public bool DoingThrow { get => doingThrow; set => doingThrow = value; }
     public bool DoingKick { get => doingKick; set => doingKick = value; }
+    public Animator Animator { get => animator; set => animator = value; }
+    public Transform BallHandPosition { get => ballHandPosition; set => ballHandPosition = value; }
+    public Transform TransformBall { get => transformBall; set => transformBall = value; }
+    public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
 
     void Awake()
     {
+        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
         transformBall = GameObject.Find("Ball").transform;
         scriptBall = transformBall.GetComponent<Ball>();
         soundDribble = GameObject.Find("Sound/dribble").GetComponent<AudioSource>();
         soundShoot = GameObject.Find("Sound/shoot").GetComponent<AudioSource>();
         soundSteal = GameObject.Find("Sound/woosh").GetComponent<AudioSource>();
-        animator = GetComponent<Animator>();
         PlayerBallPosition = transform.Find("BallPosition");
         rigidbodyBall = transformBall.gameObject.GetComponent<Rigidbody>();
         playerInput = GetComponent<PlayerInput>();
@@ -71,6 +70,8 @@ public class Player : MonoBehaviour
         initialPosition = transform.position;
         scriptThirdPersonController = GetComponent<ThirdPersonController>();
         scriptAIPlayer = GetComponent<AIPlayer>();
+        animator = GetComponent<Animator>();
+        playerAction = new PlayerAction(this, animator);
     }
 
     public float Speed()
@@ -83,35 +84,6 @@ public class Player : MonoBehaviour
         {
             return scriptAIPlayer.Speed;
         }
-    }
-    
-    private void HandleAnimations()
-    {
-        if (animationPlaying != null)
-        {
-            if (animationPlaying.FadeIn)
-            {
-                animator.SetLayerWeight(animationPlaying.Layer, Mathf.Lerp(animator.GetLayerWeight(animationPlaying.Layer), 1f, Time.deltaTime * 10f));
-            }
-
-            if (Time.time - animationPlaying.TimeStarted > animationPlaying.Duration)
-            {
-                if (animationPlaying.FadeOut)
-                {
-                    animator.SetLayerWeight(animationPlaying.Layer, Mathf.Lerp(animator.GetLayerWeight(animationPlaying.Layer), 0f, Time.deltaTime * 10f));
-                }
-                else
-                {
-                    animator.SetLayerWeight(animationPlaying.Layer, 0);
-                }
-
-                if (animator.GetLayerWeight(animationPlaying.Layer)==0)
-                {
-                    animationPlaying = null;
-                }
-            }
-        }
-
     }
 
     void UpdateGame()
@@ -135,7 +107,7 @@ public class Player : MonoBehaviour
     {
         if (!Game.Instance.GameState.Equals(GameState_.Replay))
         {
-            HandleAnimations();
+            playerAction.Update();
         }
 
         if (Game.Instance.GameState.Equals(GameState_.Playing))
@@ -143,23 +115,28 @@ public class Player : MonoBehaviour
             UpdateGame();
         }
 
-        if (Game.Instance.GameState.Equals(GameState_.BringingBallIn) && (doingKick || doingThrow))
+        if (doingKick)
         {
-            if (timeLeftAnimation>0)
+            transformBall.parent = transform;
+            transformBall.position = PlayerBallPosition.position; 
+            if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
             {
-                timeLeftAnimation -= Time.deltaTime;
-                if (timeLeftAnimation <= 0)
-                {
-                    doingKick = doingThrow = false;
-                    Game.Instance.SetGameState(GameState_.Playing);
-                    TakeShot();
-                }
+                // Player did not respond, so execute kick in for him
+                SetPlayerAction(ActionType_.Shot, 0.1f);
             }
-            else if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && timeLeftAnimation <= 0)
+        }
+
+        if (doingThrow)
+        {
+            animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
+            animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
+            // note: we set the position on every frame, because the rigidbody physics is on.
+            transformBall.position = BallHandPosition.position; 
+            transformBall.parent = transform;
+            if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
             {
-                // Player did not respond, so execute kick/throw in for him
-                shootingPower = 0.1f;
-                Shoot();
+                // Player did not respond, so execute throw in for him
+                SetPlayerAction(ActionType_.ThrowinShot, 0.1f);
             }
         }
     }
@@ -169,10 +146,14 @@ public class Player : MonoBehaviour
         float distanceToBall = Vector3.Distance(transformBall.position, PlayerBallPosition.position);
         if (distanceToBall < 0.6)
         {
+            // this makes the ball stop rotating from physics.
+            scriptBall.GetComponent<Rigidbody>().isKinematic = true;
+            scriptBall.GetComponent<Rigidbody>().isKinematic = false;
             if (Game.Instance.PlayerWithBall != null)
             {
+                takeBallDelay = 2.0f;
                 soundSteal.Play();
-                Game.Instance.PlayerWithBall.LooseBall(true);
+                Game.Instance.PlayerWithBall.LooseBall();
             }
             Game.Instance.SetPlayerWithBall(this);
         }
@@ -189,20 +170,10 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void LooseBall(bool stolen = false)
+    public void LooseBall()
     {
-        if (stolen)
-        {
-            takeBallDelay = 2.0f;
-        }
         HasBall = false;
-        shootingPower = 0;
         Game.Instance.RemovePowerBar();
-    }
-
-    public void ScoreGoal()
-    {
-        animationPlaying = new Animation(animator, Game.CHEERING_DURATION, false, true, Animation.LAYER_CHEER, "Cheer");
     }
 
     // Special lookAt function that also moves the camera behind the player
@@ -215,51 +186,37 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void Pass()
-    {
-        if (Game.Instance.PassDestinationPlayer == null)
+    public void SetPlayerAction(ActionType_ actionType, float power = 0) {
+        // Any running action must be finished before you can order a new action
+        if (!playerAction.Running)
         {
-            transform.LookAt(fellowPlayer.transform.position);
-            soundShoot.Play();
-            LooseBall();
-            animationPlaying = new Animation(animator, KICK_DURATION, false, true, Animation.LAYER_SHOOT, "Shoot");
-            scriptBall.Pass(this);
-            if (Game.Instance.GameState.Equals(GameState_.BringingBallIn))
-            {
-                Game.Instance.SetGameState(GameState_.Playing);
-            }
-        }
-    }
-
-    public void Shoot()
-    {
-        if (doingKick)
-        {
-            HasBall = false;
-            animationPlaying = new Animation(animator, KICK_DURATION, false, true, Animation.LAYER_SHOOT, "Shoot");
-            timeLeftAnimation = KICK_DURATION;
-        }
-        else if (doingThrow)
-        {
-            HasBall = false;
-            animationPlaying = new Animation(animator, THROWIN_DURATION, false, true, Animation.LAYER_THROW_IN, "ThrowIn");
-            timeLeftAnimation = THROWIN_DURATION;
+            playerAction.Set(actionType, power);
         }
         else
         {
-            TakeShot();
+            Debug.Log("action still running!");
         }
     }
 
-    private void TakeShot()
+    public void TakeShot(float shootingPower)
     {
-        takeBallDelay = 0.2f;
         soundShoot.Play();
+        takeBallDelay = 0.2f;
         Game.Instance.SetPlayerWithBall(null);
         Vector3 shootdirection = transform.forward;
         shootdirection.y += 0.3f;
+        Debug.DrawLine(transform.position, transform.position + shootdirection * 10f, Color.white, 2.5f);
         rigidbodyBall.AddForce(shootdirection * (10 + shootingPower * 25f), ForceMode.VelocityChange);
+ //       rigidbodyBall.AddForce(new Vector3(0,0.3f,0)*20f, ForceMode.VelocityChange);
         LooseBall();
+    }
+
+    public void TakePass()
+    {
+        soundShoot.Play();
+        transform.LookAt(fellowPlayer.transform.position);
+        LooseBall();
+        scriptBall.Pass(this);
     }
 
     public void Activate()
@@ -268,6 +225,12 @@ public class Player : MonoBehaviour
         playerInput.enabled = true;
     }
 
+    public void SwitchActivePlayer()
+    {
+        PlayerInput.enabled = false;
+        fellowPlayer.Activate();
+        playerFollowCamera.Follow = fellowPlayer.PlayerCameraRoot;
+    }
     public void SetPosition(Vector3 position)
     {
         if (Team.IsHuman)

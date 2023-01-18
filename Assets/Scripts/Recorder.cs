@@ -102,8 +102,8 @@ public class Recorder : MonoBehaviour
             {
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].position = Game.Instance.Teams[teamNumber].Players[playerNumber].transform.position;
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].rotation = Game.Instance.Teams[teamNumber].Players[playerNumber].transform.rotation;
-                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].layerWeigthShoot = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetLayerWeight(Animation.LAYER_SHOOT);
-                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].layerWeigthThrowin = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetLayerWeight(Animation.LAYER_THROW_IN);
+                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].layerWeigthShoot = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetLayerWeight(PlayerAnimation.LAYER_SHOOT);
+                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].layerWeigthThrowin = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetLayerWeight(PlayerAnimation.LAYER_THROW_IN);
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].jump = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDJump);
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].grounded = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDGrounded);
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].freefall = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDFreeFall);
@@ -145,8 +145,8 @@ public class Recorder : MonoBehaviour
             {
                 Game.Instance.Teams[teamNumber].Players[playerNumber].transform.position = recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].position;
                 Game.Instance.Teams[teamNumber].Players[playerNumber].transform.rotation = recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].rotation;
-                Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetLayerWeight(Animation.LAYER_SHOOT, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].layerWeigthShoot);
-                Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetLayerWeight(Animation.LAYER_THROW_IN, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].layerWeigthThrowin);
+                Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetLayerWeight(PlayerAnimation.LAYER_SHOOT, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].layerWeigthShoot);
+                Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].layerWeigthThrowin);
                 Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetBool(_animIDJump, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].jump);
                 Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetBool(_animIDGrounded, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].grounded);
                 Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.SetBool(_animIDFreeFall, recordedTeams[teamNumber].players[playerNumber].frames[currentPlayingFrame].freefall);
@@ -165,11 +165,18 @@ public class Recorder : MonoBehaviour
             }
             else
             {
-                Game.Instance.ScriptBall.gameObject.GetComponent<Rigidbody>().isKinematic = false;
-                Game.Instance.ScriptBall.gameObject.GetComponent<Rigidbody>().useGravity = true;
-                Game.Instance.KickOff();
+                EndReplay();
             }
         }
+    }
+
+    public void EndReplay()
+    {
+        cameraReplayField[goalOfTeam].enabled = false;
+        cameraReplayGoal[goalOfTeam].enabled = false;
+        Game.Instance.ScriptBall.Rigidbody.isKinematic = false;
+        Game.Instance.ScriptBall.Rigidbody.useGravity = true;
+        Game.Instance.KickOff();
     }
 
     void FixedUpdate()

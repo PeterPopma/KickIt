@@ -125,10 +125,7 @@ public class ThirdPersonController : MonoBehaviour
 	{
 		if (Game.Instance.GameState.Equals(GameState_.WaitingForWhistle) || Game.Instance.GameState.Equals(GameState_.BringingBallIn))
 		{
-			if (scriptPlayer.DoingKick || scriptPlayer.DoingThrow)
-            {
-				RotatePlayerWithView();
-			}
+			RotatePlayerWithView();
 		}
 		
 		if (!Game.Instance.GameState.Equals(GameState_.Playing) && !Game.Instance.GameState.Equals(GameState_.Cheering))

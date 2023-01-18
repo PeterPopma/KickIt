@@ -35,7 +35,6 @@ public class Game : MonoBehaviour
     public const float FIELD_BOUNDARY_UPPER_Z = 25f;
     public const float MINIMUM_DISTANCE_FREEKICK = 18f;
 
-    public const float CHEERING_DURATION = 4.0f;
     public const float WAITING_FOR_WHISTLE_DURATION = 2.0f;
 
     [SerializeField] private Recorder recorder;
@@ -43,10 +42,10 @@ public class Game : MonoBehaviour
     [SerializeField] private GameObject playerSpawnPosition2;
     [SerializeField] private GameObject playerSpawnPosition3;
     [SerializeField] private GameObject playerSpawnPosition4;
-    [SerializeField] private GameObject pfPlayer1;
-    [SerializeField] private GameObject pfPlayer2;
-    [SerializeField] private GameObject pfPlayer3;
-    [SerializeField] private GameObject pfPlayer4;
+    [SerializeField] private GameObject pfPlayerRed1;
+    [SerializeField] private GameObject pfPlayerRed2;
+    [SerializeField] private GameObject pfPlayerBlue1;
+    [SerializeField] private GameObject pfPlayerBlue2;
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
@@ -86,13 +85,14 @@ public class Game : MonoBehaviour
     public GameState_ GameState { get => gameState; set => gameState = value; }
     public GameState_ NextGameState { get => nextGameState; set => nextGameState = value; }
     public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
+    public Recorder Recorder { get => recorder; set => recorder = value; }
 
     private void InitGamePlayerVsPC()
     {
         Team newTeam = new(0, true);
         teams.Add(newTeam);
 
-        GameObject spawnedPlayer = Instantiate(pfPlayer1, playerSpawnPosition1.transform.position, Quaternion.identity);
+        GameObject spawnedPlayer = Instantiate(pfPlayerRed1, playerSpawnPosition1.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Peter";
         spawnedPlayer.GetComponent<Player>().IsHuman = true;
         spawnedPlayer.GetComponent<Player>().Number = 0;
@@ -101,7 +101,7 @@ public class Game : MonoBehaviour
         newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
         playerFollowCamera.Follow = spawnedPlayer.transform.Find("PlayerCameraRoot").transform;
 
-        GameObject spawnedPlayer2 = Instantiate(pfPlayer2, playerSpawnPosition2.transform.position, Quaternion.identity);
+        GameObject spawnedPlayer2 = Instantiate(pfPlayerRed2, playerSpawnPosition2.transform.position, Quaternion.identity);
         spawnedPlayer2.name = "Mark";
         spawnedPlayer2.GetComponent<Player>().IsHuman = true;
         spawnedPlayer2.GetComponent<Player>().Number = 1;
@@ -115,14 +115,14 @@ public class Game : MonoBehaviour
         newTeam = new Team(1, false);
         teams.Add(newTeam);
 
-        spawnedPlayer = Instantiate(pfPlayer3, playerSpawnPosition3.transform.position, Quaternion.identity);
+        spawnedPlayer = Instantiate(pfPlayerBlue1, playerSpawnPosition3.transform.position, Quaternion.identity);
         spawnedPlayer.name = "Arnoud";
         spawnedPlayer.GetComponent<Player>().IsHuman = false;
         spawnedPlayer.GetComponent<Player>().Number = 0;
         spawnedPlayer.GetComponent<Player>().Team = newTeam;
         newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
 
-        spawnedPlayer2 = Instantiate(pfPlayer4, playerSpawnPosition4.transform.position, Quaternion.identity);
+        spawnedPlayer2 = Instantiate(pfPlayerBlue2, playerSpawnPosition4.transform.position, Quaternion.identity);
         spawnedPlayer2.name = "Thirza";
         spawnedPlayer2.GetComponent<Player>().IsHuman = false;
         spawnedPlayer2.GetComponent<Player>().Number = 1;
@@ -218,7 +218,7 @@ public class Game : MonoBehaviour
         goalTextColorAlpha = 1;
         soundCheer.Play();
         textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
-        playerLastTouchedBall.ScoreGoal();
+        playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer);
 
         SetGameState(GameState_.Cheering);
     }
@@ -242,6 +242,13 @@ public class Game : MonoBehaviour
             case GameState_.WaitingForWhistle:
                 break;
             case GameState_.Cheering:
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
+                break;
+            case GameState_.Replay:
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
+                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
+                recorder.PlayBack(goalOfTeamLastScored);
                 break;
         }
     }
@@ -265,15 +272,6 @@ public class Game : MonoBehaviour
                 ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
                 soundWhistle.Play();
                 SetGameState(nextGameState);
-            }
-        }
-
-        if (gameState == GameState_.Cheering)
-        {
-            if (Time.time - timeGameStateStarted > CHEERING_DURATION)
-            {
-                playerLastTouchedBall.Animator.SetLayerWeight(Animation.LAYER_CHEER, 0);
-                SetGameState(GameState_.Replay);
             }
         }
 
@@ -410,6 +408,7 @@ public class Game : MonoBehaviour
 
     public Player GetPlayerToThrowIn()
     {
+        return PlayerClosestToBall(0);
         if (teamLastTouched==0)
         {
             return PlayerClosestToBall(1);
