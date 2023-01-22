@@ -7,6 +7,7 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
     private float ballOutOfFieldTimeOut;
+    private float delayCheckOutOfField;
     private bool isThrowIn;
     private Vector3 speed;
     private Vector3 ballOutOfFieldposition;
@@ -15,10 +16,13 @@ public class Ball : MonoBehaviour
     private AudioSource soundWhistle;
     private const float BALL_GROUND_POSITION_Y = 0.72f;
     private const float PASSING_SPEED = 25f;
+    private bool isOutOfField;
 
     public float BallOutOfFieldTimeOut { get => ballOutOfFieldTimeOut; set => ballOutOfFieldTimeOut = value; }
     public Rigidbody Rigidbody { get => rigidbody; set => rigidbody = value; }
     public Vector3 Speed { get => speed; set => speed = value; }
+    public float DelayCheckOutOfField { get => delayCheckOutOfField; set => delayCheckOutOfField = value; }
+    public bool IsOutOfField { get => isOutOfField; set => isOutOfField = value; }
 
     private float timePassedBall;
     private CinemachineVirtualCamera playerFollowCamera;
@@ -26,6 +30,7 @@ public class Ball : MonoBehaviour
     private void Awake()
     {
         playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
+
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
         rigidbody = GetComponent<Rigidbody>();
     }
@@ -55,7 +60,7 @@ public class Ball : MonoBehaviour
         transform.position = ballOutOfFieldposition;
         rigidbody.velocity = Vector3.zero;
         rigidbody.angularVelocity = Vector3.zero;
-        Player player = Game.Instance.GetPlayerToThrowIn();
+        HumanPlayer player = Game.Instance.GetPlayerToThrowIn();
         player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
         // Look in the directon of the field. Otherwise the ball will be out of field again.
         player.transform.LookAt(Game.Instance.KickOffPosition);
@@ -67,14 +72,16 @@ public class Ball : MonoBehaviour
         {
             player.Animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
             player.Animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
-            transform.position = player.BallHandPosition.position;
             player.DoingThrow = true;
             rigidbody.isKinematic = true;
+            transform.position = player.BallHandPosition.position;
         }
         else
         {
             player.DoingKick = true;
+            transform.position = player.PlayerBallPosition.position;
         }
+        transform.parent = player.transform;
 
         // move players that are too close
         Game.Instance.SetMinimumDistanceOtherPlayers(player);
@@ -85,22 +92,24 @@ public class Ball : MonoBehaviour
         // ball out of field
         if (transform.position.z < Game.FIELD_BOUNDARY_LOWER_Z)
         {
-            soundWhistle.Play();
+            isOutOfField = true;
             isThrowIn = true;
             ballOutOfFieldTimeOut = 1.0f;
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, -25);
+            soundWhistle.Play();
         }
         if (transform.position.z > Game.FIELD_BOUNDARY_UPPER_Z)
         {
-            soundWhistle.Play();
+            isOutOfField = true;
             isThrowIn = true;
             ballOutOfFieldTimeOut = 1.0f;
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, 25);
+            soundWhistle.Play();
         }
 
         if (transform.position.x < Game.FIELD_BOUNDARY_LOWER_X)
         {
-            soundWhistle.Play();
+            isOutOfField = true;
             isThrowIn = false;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched == 0)
@@ -120,10 +129,11 @@ public class Ball : MonoBehaviour
                     ballOutOfFieldposition = new Vector3(-52.6f, BALL_GROUND_POSITION_Y, -25);
                 }
             }
+            soundWhistle.Play();
         }
         if (transform.position.x > Game.FIELD_BOUNDARY_UPPER_X)
         {
-            soundWhistle.Play();
+            isOutOfField = true;
             isThrowIn = false;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched == 1)
@@ -143,6 +153,7 @@ public class Ball : MonoBehaviour
                     ballOutOfFieldposition = new Vector3(52.3f, BALL_GROUND_POSITION_Y, -25);
                 }
             }
+            soundWhistle.Play();
         }
     }
 
@@ -162,6 +173,10 @@ public class Ball : MonoBehaviour
                 TakeThrowInOrGoalKick();
                 return;
             }
+        }
+        else if (delayCheckOutOfField > 0)
+        {
+            delayCheckOutOfField -= Time.deltaTime;
         }
         else
         {
@@ -194,12 +209,15 @@ public class Ball : MonoBehaviour
 
     private void PassBall()
     {
-        if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PassDestinationPlayer.PlayerCameraRoot)
+        if (Game.Instance.PassDestinationPlayer is HumanPlayer)
         {
-            // switch player
-            Game.Instance.PassDestinationPlayer.FellowPlayer.PlayerInput.enabled = false;
-            Game.Instance.PassDestinationPlayer.Activate();
-            playerFollowCamera.Follow = Game.Instance.PassDestinationPlayer.PlayerCameraRoot;
+            if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PassDestinationPlayer.PlayerCameraRoot)
+            {
+                // switch player
+                ((HumanPlayer)Game.Instance.PassDestinationPlayer.FellowPlayer).PlayerInput.enabled = false;
+                ((HumanPlayer)Game.Instance.PassDestinationPlayer).Activate();
+                playerFollowCamera.Follow = Game.Instance.PassDestinationPlayer.PlayerCameraRoot;
+            }
         }
 
         Vector3 movedirection = Game.Instance.PassDestinationPlayer.PlayerBallPosition.position - transform.position;

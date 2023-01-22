@@ -18,7 +18,7 @@ public class PlayerAction
     public const float ANIMATION_DURATION_CHEERING = 4.0f;
 
     public const float DELAY_KICK = 0.0f;
-    public const float DELAY_THROW = 0.5f;
+    public const float DELAY_THROW = 0.1f;
 
     private float timeStarted;
     private float durationActionDelay;
@@ -26,7 +26,7 @@ public class PlayerAction
     private PlayerAnimation playerAnimation;
     private float power;
     private bool running;
-    private Player scriptPlayer;
+    private Player player;
     private Animator animator;
 
 
@@ -36,9 +36,9 @@ public class PlayerAction
     public float TimeStarted { get => timeStarted; set => timeStarted = value; }
     public bool Running { get => running; set => running = value; }
 
-    public PlayerAction(Player scriptPlayer, Animator animator)
+    public PlayerAction(Player player, Animator animator)
     {
-        this.scriptPlayer = scriptPlayer;
+        this.player = player;
         this.animator = animator;
     }
 
@@ -79,27 +79,27 @@ public class PlayerAction
         switch (actionType)
         {
             case ActionType_.Pass:
-                scriptPlayer.DoingKick = false;
+                player.DoingKick = false;
                 durationActionDelay = DELAY_KICK;
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_KICK, false, true, PlayerAnimation.LAYER_SHOOT, "Shoot");
                 break;
 
             case ActionType_.Shot:
-                scriptPlayer.DoingKick = false;
+                player.DoingKick = false;
                 durationActionDelay = DELAY_KICK;
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_KICK, false, true, PlayerAnimation.LAYER_SHOOT, "Shoot");
                 break;
 
             case ActionType_.ThrowinPass:
-                scriptPlayer.DoingThrow = false;
+                player.DoingThrow = false;
                 durationActionDelay = DELAY_THROW;
-                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_THROWIN, false, true, PlayerAnimation.LAYER_THROW_IN, "ThrowIn");
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_THROWIN, false, true, PlayerAnimation.LAYER_THROW_IN, "ThrowIn", 0.4f);
                 break;
 
             case ActionType_.ThrowinShot:
-                scriptPlayer.DoingThrow = false;
+                player.DoingThrow = false;
                 durationActionDelay = DELAY_THROW;
-                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_THROWIN, false, true, PlayerAnimation.LAYER_THROW_IN, "ThrowIn");
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_THROWIN, false, true, PlayerAnimation.LAYER_THROW_IN, "ThrowIn", 0.4f);
                 break;
 
             case ActionType_.Cheer:
@@ -112,29 +112,31 @@ public class PlayerAction
     private void Execute()
     {
         running = false;
-        scriptPlayer.TransformBall.parent = null;
+        player.TransformBall.parent = null;
 
         switch (actionType)
         {
             case ActionType_.Pass:
-                scriptPlayer.TakePass();
+                player.TakePass();
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
             case ActionType_.Shot:
-                scriptPlayer.TakeShot(power);
+                player.TakeShot(power);
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
             case ActionType_.ThrowinPass:
-                scriptPlayer.ScriptBall.Rigidbody.isKinematic = false;
-                scriptPlayer.TakePass();
+                player.ScriptBall.DelayCheckOutOfField = 0.5f;
+                player.ScriptBall.Rigidbody.isKinematic = false;
+                player.TakePass();
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
             case ActionType_.ThrowinShot:
-                scriptPlayer.ScriptBall.Rigidbody.isKinematic = false;
-                scriptPlayer.TakeShot(power);
+                player.ScriptBall.DelayCheckOutOfField = 0.5f;
+                player.ScriptBall.Rigidbody.isKinematic = false;
+                player.TakeShot(power);
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
@@ -157,7 +159,7 @@ public class PlayerAction
         }
         if (running && (actionType.Equals(ActionType_.ThrowinShot) || actionType.Equals(ActionType_.ThrowinPass)))
         {
-            scriptPlayer.TransformBall.position = scriptPlayer.BallHandPosition.position;
+            player.TransformBall.position = player.BallHandPosition.position;
         }
     }
 }

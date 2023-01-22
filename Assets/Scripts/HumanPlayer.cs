@@ -1,86 +1,39 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
-public class HumanPlayer : MonoBehaviour
+public class HumanPlayer : Player
 {
-    Player scriptPlayer;
-    private InputSystem inputSystem;
-    private float shootingPower;
+    private ThirdPersonController scriptThirdPersonController;
+    private CinemachineVirtualCamera playerFollowCamera;
+    protected InputSystem inputSystem;
+    private PlayerInput playerInput;
+    public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
+    public ThirdPersonController ScriptThirdPersonController { get => scriptThirdPersonController; set => scriptThirdPersonController = value; }
 
-    void Awake()
+
+    protected void Awake()
     {
-        inputSystem = GetComponent<InputSystem>();
-        scriptPlayer = GetComponent<Player>();
+        base.Awake();
+
+        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
+        scriptThirdPersonController = GetComponent<ThirdPersonController>();
+        inputSystem = GetComponent<InputSystem>(); 
+        playerInput = GetComponent<PlayerInput>();
+    }
+    protected void Start()
+    {
+        base.Start();
     }
 
-    void Update()
+    // Update is called once per frame
+    protected void Update()
     {
-        if (scriptPlayer.DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)
-        {
-            if (inputSystem.pass)
-            {
-                inputSystem.pass = false;
-                scriptPlayer.SetPlayerAction(ActionType_.ThrowinPass);
-            }
-
-            if (inputSystem.shoot)
-            {
-                shootingPower += 1.5f * Time.deltaTime;
-                Game.Instance.SetPowerBar(shootingPower);
-                if (shootingPower > 1)
-                {
-                    shootingPower = 1;
-                }
-            }
-            else
-            {
-                if (shootingPower > 0)
-                {
-                    scriptPlayer.SetPlayerAction(ActionType_.ThrowinShot, shootingPower);
-                }
-                shootingPower = 0;
-            }
-        }
-
-        if (Game.Instance.GameState == GameState_.Playing ||
-            (Game.Instance.GameState == GameState_.BringingBallIn && scriptPlayer.DoingKick))
-        {
-            if (scriptPlayer.HasBall)
-            {
-                if (inputSystem.pass)
-                {
-                    inputSystem.pass = false;
-                    scriptPlayer.SetPlayerAction(ActionType_.Pass);
-                }
-
-                if (inputSystem.shoot)
-                {
-                    shootingPower += 1.5f * Time.deltaTime;
-                    Game.Instance.SetPowerBar(shootingPower);
-                    if (shootingPower > 1)
-                    {
-                        shootingPower = 1;
-                    }
-                }
-                else
-                {
-                    if (shootingPower > 0)
-                    {
-                        scriptPlayer.SetPlayerAction(ActionType_.Shot, shootingPower);
-                    }
-                    shootingPower = 0;
-                }
-            }
-            else
-            {
-                if (inputSystem.pass)
-                {
-                    inputSystem.pass = false;
-                    scriptPlayer.SwitchActivePlayer();
-                }
-            }
-        }
+        base.Update();
 
         if (Game.Instance.GameState == GameState_.Replay)
         {
@@ -90,4 +43,17 @@ public class HumanPlayer : MonoBehaviour
             }
         }
     }
+    public void Activate()
+    {
+        Game.Instance.ActiveHumanPlayer = this;
+        playerInput.enabled = true;
+    }
+
+    public void SwitchActivePlayer()
+    {
+        PlayerInput.enabled = false;
+        ((HumanPlayer)fellowPlayer).Activate();
+        playerFollowCamera.Follow = fellowPlayer.PlayerCameraRoot;
+    }
+
 }

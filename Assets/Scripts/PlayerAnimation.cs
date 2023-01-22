@@ -15,7 +15,7 @@ public class PlayerAnimation
     int layer;
     string name;
 
-    public PlayerAnimation(Animator animator, float duration, bool fadeIn, bool fadeOut, int layer, string name)
+    public PlayerAnimation(Animator animator, float duration, bool fadeIn, bool fadeOut, int layer, string name, float startTime=0f)
     {
         this.animator = animator;
         this.duration = duration;
@@ -29,7 +29,7 @@ public class PlayerAnimation
             animator.SetLayerWeight(layer, 1);
         }
 
-        animator.Play(name, layer, 0f);
+        animator.Play(name, layer, startTime);
     }
 
     public Animator Animator { get => animator; set => animator = value; }

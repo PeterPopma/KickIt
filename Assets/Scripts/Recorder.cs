@@ -107,8 +107,9 @@ public class Recorder : MonoBehaviour
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].jump = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDJump);
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].grounded = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDGrounded);
                 recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].freefall = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetBool(_animIDFreeFall);
-                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].speed = Game.Instance.Teams[teamNumber].Players[playerNumber].Speed();
+                recordedTeams[teamNumber].players[playerNumber].frames[currentRecordingFrame].speed = Game.Instance.Teams[teamNumber].Players[playerNumber].Animator.GetFloat(_animIDSpeed);
             }
+
         }
         recordedBall.frames[currentRecordingFrame].position = ball.transform.position;
         recordedBall.frames[currentRecordingFrame].rotation = ball.transform.rotation;

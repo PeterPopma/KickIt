@@ -27,25 +27,30 @@ public class Game : MonoBehaviour
 {
     public static Game Instance;
 
+    public const float DELAY_SCOREGOAL = 0.5f;                  // Wait a little bit after scoring to show at playback
     public const float HAVING_BALL_SLOWDOWN_FACTOR = 0.8f;
     public const float PLAYER_Y_POSITION = 0.5f;
-    public const float FIELD_BOUNDARY_LOWER_X = -52.6f;
-    public const float FIELD_BOUNDARY_UPPER_X = 52.3f;
-    public const float FIELD_BOUNDARY_LOWER_Z = -25f;
-    public const float FIELD_BOUNDARY_UPPER_Z = 25f;
+    public const float FIELD_BOUNDARY_LOWER_X = -52.894f;
+    public const float FIELD_BOUNDARY_UPPER_X = 52.725f;
+    public const float FIELD_BOUNDARY_LOWER_Z = -25.37f;
+    public const float FIELD_BOUNDARY_UPPER_Z = 25.552f;
     public const float MINIMUM_DISTANCE_FREEKICK = 18f;
 
     public const float WAITING_FOR_WHISTLE_DURATION = 2.0f;
 
     [SerializeField] private Recorder recorder;
-    [SerializeField] private GameObject playerSpawnPosition1;
-    [SerializeField] private GameObject playerSpawnPosition2;
-    [SerializeField] private GameObject playerSpawnPosition3;
-    [SerializeField] private GameObject playerSpawnPosition4;
+    [SerializeField] private GameObject spawnPositionPlayerRed1;
+    [SerializeField] private GameObject spawnPositionPlayerRed2;
+    [SerializeField] private GameObject spawnPositionGoalkeeperRed;
+    [SerializeField] private GameObject spawnPositionPlayerBlue1;
+    [SerializeField] private GameObject spawnPositionPlayerBlue2;
+    [SerializeField] private GameObject spawnPositionGoalkeeperBlue;
     [SerializeField] private GameObject pfPlayerRed1;
     [SerializeField] private GameObject pfPlayerRed2;
+    [SerializeField] private GameObject pfGoalkeeperRed;
     [SerializeField] private GameObject pfPlayerBlue1;
     [SerializeField] private GameObject pfPlayerBlue2;
+    [SerializeField] private GameObject pfGoalkeeperBlue;
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
@@ -61,7 +66,7 @@ public class Game : MonoBehaviour
     private AudioSource soundWhistle;
     private Player playerLastTouchedBall;
     private Player playerWithBall;
-    private Player activeHumanPlayer;
+    private HumanPlayer activeHumanPlayer;
     private Player passDestinationPlayer;
     private CinemachineVirtualCamera playerFollowCamera;
     private int teamWithBall;
@@ -69,6 +74,7 @@ public class Game : MonoBehaviour
     private int teamKickOff;
     private float timeGameStateStarted;
     private float goalTextColorAlpha;
+    private float delayScoreGoal;
     private List<Team> teams = new();
     private Vector3 kickOffPosition = new Vector3(0, PLAYER_Y_POSITION, 0.1f);
     private Image crosshairAim;
@@ -78,7 +84,7 @@ public class Game : MonoBehaviour
     public Player PlayerWithBall { get => playerWithBall; }
     public int TeamWithBall { get => teamWithBall; set => teamWithBall = value; }
     public int TeamLastTouched { get => teamLastTouched; set => teamLastTouched = value; }
-    public Player ActiveHumanPlayer { get => activeHumanPlayer; set => activeHumanPlayer = value; }
+    public HumanPlayer ActiveHumanPlayer { get => activeHumanPlayer; set => activeHumanPlayer = value; }
     public List<Team> Teams { get => teams; set => teams = value; }
     public Vector3 KickOffPosition { get => kickOffPosition; set => kickOffPosition = value; }
     public GameMode_ GameMode { get => gameMode; set => gameMode = value; }
@@ -89,48 +95,50 @@ public class Game : MonoBehaviour
 
     private void InitGamePlayerVsPC()
     {
-        Team newTeam = new(0, true);
-        teams.Add(newTeam);
+        Team team1 = new(0);
+        teams.Add(team1);
 
-        GameObject spawnedPlayer = Instantiate(pfPlayerRed1, playerSpawnPosition1.transform.position, Quaternion.identity);
-        spawnedPlayer.name = "Peter";
-        spawnedPlayer.GetComponent<Player>().IsHuman = true;
-        spawnedPlayer.GetComponent<Player>().Number = 0;
-        spawnedPlayer.GetComponent<Player>().Team = newTeam;
-        spawnedPlayer.GetComponent<Player>().Activate();
-        newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
-        playerFollowCamera.Follow = spawnedPlayer.transform.Find("PlayerCameraRoot").transform;
+        GameObject playerRed1 = Instantiate(pfPlayerRed1, spawnPositionPlayerRed1.transform.position, Quaternion.identity);
+        playerRed1.name = "Peter";
+        playerRed1.GetComponent<HumanFieldPlayer>().Team = team1;
+        playerRed1.GetComponent<HumanFieldPlayer>().Activate();
+        team1.Players.Add(playerRed1.GetComponent<HumanFieldPlayer>());
+        playerFollowCamera.Follow = playerRed1.transform.Find("PlayerCameraRoot").transform;
 
-        GameObject spawnedPlayer2 = Instantiate(pfPlayerRed2, playerSpawnPosition2.transform.position, Quaternion.identity);
-        spawnedPlayer2.name = "Mark";
-        spawnedPlayer2.GetComponent<Player>().IsHuman = true;
-        spawnedPlayer2.GetComponent<Player>().Number = 1;
-        spawnedPlayer2.GetComponent<Player>().Team = newTeam;
-        spawnedPlayer2.GetComponent<PlayerInput>().enabled = false;
-        newTeam.Players.Add(spawnedPlayer2.GetComponent<Player>());
+        GameObject playerRed2 = Instantiate(pfPlayerRed2, spawnPositionPlayerRed2.transform.position, Quaternion.identity);
+        playerRed2.name = "Mark";
+        playerRed2.GetComponent<HumanFieldPlayer>().Team = team1;
+        playerRed2.GetComponent<PlayerInput>().enabled = false;
+        team1.Players.Add(playerRed2.GetComponent<HumanFieldPlayer>());
 
-        spawnedPlayer.GetComponent<Player>().FellowPlayer = spawnedPlayer2.GetComponent<Player>();
-        spawnedPlayer2.GetComponent<Player>().FellowPlayer = spawnedPlayer.GetComponent<Player>();
+        playerRed1.GetComponent<HumanFieldPlayer>().FellowPlayer = playerRed2.GetComponent<HumanFieldPlayer>();
+        playerRed2.GetComponent<HumanFieldPlayer>().FellowPlayer = playerRed1.GetComponent<HumanFieldPlayer>();
 
-        newTeam = new Team(1, false);
-        teams.Add(newTeam);
+        GameObject goalkeeperRed = Instantiate(pfGoalkeeperRed, spawnPositionGoalkeeperRed.transform.position, spawnPositionGoalkeeperRed.transform.rotation);
+        goalkeeperRed.name = "Jaden";
+        goalkeeperRed.GetComponent<HumanGoalkeeper>().Team = team1;
+        team1.Players.Add(goalkeeperRed.GetComponent<HumanGoalkeeper>());
 
-        spawnedPlayer = Instantiate(pfPlayerBlue1, playerSpawnPosition3.transform.position, Quaternion.identity);
-        spawnedPlayer.name = "Arnoud";
-        spawnedPlayer.GetComponent<Player>().IsHuman = false;
-        spawnedPlayer.GetComponent<Player>().Number = 0;
-        spawnedPlayer.GetComponent<Player>().Team = newTeam;
-        newTeam.Players.Add(spawnedPlayer.GetComponent<Player>());
+        Team team2 = new Team(1);
+        teams.Add(team2);
 
-        spawnedPlayer2 = Instantiate(pfPlayerBlue2, playerSpawnPosition4.transform.position, Quaternion.identity);
-        spawnedPlayer2.name = "Thirza";
-        spawnedPlayer2.GetComponent<Player>().IsHuman = false;
-        spawnedPlayer2.GetComponent<Player>().Number = 1;
-        spawnedPlayer2.GetComponent<Player>().Team = newTeam;
-        newTeam.Players.Add(spawnedPlayer2.GetComponent<Player>());
+        GameObject playerBlue1 = Instantiate(pfPlayerBlue1, spawnPositionPlayerBlue1.transform.position, Quaternion.identity);
+        playerBlue1.name = "Arnoud";
+        playerBlue1.GetComponent<AIPlayer>().Team = team2;
+        team2.Players.Add(playerBlue1.GetComponent<AIPlayer>());
 
-        spawnedPlayer.GetComponent<Player>().FellowPlayer = spawnedPlayer2.GetComponent<Player>();
-        spawnedPlayer2.GetComponent<Player>().FellowPlayer = spawnedPlayer.GetComponent<Player>();
+        GameObject playerBlue2 = Instantiate(pfPlayerBlue2, spawnPositionPlayerBlue2.transform.position, Quaternion.identity);
+        playerBlue2.name = "Thirza";
+        playerBlue2.GetComponent<AIPlayer>().Team = team2;
+        team2.Players.Add(playerBlue2.GetComponent<AIPlayer>());
+
+        GameObject goalkeeperBlue = Instantiate(pfGoalkeeperBlue, spawnPositionGoalkeeperBlue.transform.position, spawnPositionGoalkeeperBlue.transform.rotation);
+        goalkeeperBlue.name = "Maaike";
+        goalkeeperBlue.GetComponent<AIGoalkeeper>().Team = team2;
+        team2.Players.Add(goalkeeperBlue.GetComponent<AIGoalkeeper>());
+
+        playerBlue1.GetComponent<AIPlayer>().FellowPlayer = playerBlue2.GetComponent<AIPlayer>();
+        playerBlue2.GetComponent<AIPlayer>().FellowPlayer = playerBlue1.GetComponent<AIPlayer>();
     }
 
     public void Awake()
@@ -176,11 +184,11 @@ public class Game : MonoBehaviour
         scriptBall.Rigidbody.angularVelocity = Vector3.zero;
     }
 
-    public Player PlayerClosestToBall(int teamNumber)
+    public HumanPlayer PlayerClosestToBall(int teamNumber)
     {
-        Player closestPlayer = null;
+        HumanPlayer closestPlayer = null;
         float closestDistance = float.MaxValue;
-        foreach(Player player in teams[teamNumber].Players)
+        foreach(HumanPlayer player in teams[teamNumber].Players)
         {
             float distance = (player.transform.position - scriptBall.transform.position).magnitude;
             if(distance < closestDistance)
@@ -192,11 +200,11 @@ public class Game : MonoBehaviour
         return closestPlayer;
     }
 
-    public Player PlayerClosestToLocation(int teamNumber, Vector3 location)
+    public HumanPlayer PlayerClosestToLocation(int teamNumber, Vector3 location)
     {
-        Player closestPlayer = null;
+        HumanPlayer closestPlayer = null;
         float closestDistance = float.MaxValue;
-        foreach (Player player in teams[teamNumber].Players)
+        foreach (HumanPlayer player in teams[teamNumber].Players)
         {
             float distance = (player.transform.position - location).magnitude;
             if (distance < closestDistance)
@@ -220,7 +228,7 @@ public class Game : MonoBehaviour
         textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
         playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer);
 
-        SetGameState(GameState_.Cheering);
+        delayScoreGoal = DELAY_SCOREGOAL;
     }
 
     public void KickOff()
@@ -272,6 +280,7 @@ public class Game : MonoBehaviour
                 ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
                 soundWhistle.Play();
                 SetGameState(nextGameState);
+                scriptBall.IsOutOfField = false;
             }
         }
 
@@ -282,56 +291,16 @@ public class Game : MonoBehaviour
             textGoal.fontSize = 350 - (goalTextColorAlpha * 250);
         }
 
-//        PerformSanityChecks();
-    }
-
-    private void PerformSanityChecks()
-    {
-        Player playerWithInputEnabled = null;
-
-        foreach (Team team in teams)
+        if (delayScoreGoal>0)
         {
-            foreach (Player player in team.Players)
+            delayScoreGoal -= Time.deltaTime;
+            if (delayScoreGoal <= 0)
             {
-                if (transform.position.y < 0)
-                {
-                    DisplayErrorMessage("players cannot be lower than the field");
-                }
-                if (player.GetComponent<PlayerInput>()!=null && player.GetComponent<PlayerInput>().enabled == true)
-                {
-                    playerWithInputEnabled = player;
-                }
+                SetGameState(GameState_.Cheering);
             }
         }
 
-        if (playerWithInputEnabled==null)
-        {
-            DisplayErrorMessage("there must always be a player with input enabled");
-        }
-
-        if (ActiveHumanPlayer!=playerWithInputEnabled)
-        {
-            DisplayErrorMessage("active player must be player with input enabled");
-        }
-
-        if (!playerWithInputEnabled.transform.Find("PlayerCameraRoot").transform.parent.name.Equals(playerFollowCamera.Follow.parent.name))
-        {
-            DisplayErrorMessage("camera must follow player with input enabled");
-        }
-
-        if (scriptBall.transform.position.y < 0 && 
-            scriptBall.transform.position.x > FIELD_BOUNDARY_LOWER_X &&
-            scriptBall.transform.position.x < FIELD_BOUNDARY_UPPER_X && 
-            scriptBall.transform.position.z > FIELD_BOUNDARY_LOWER_Z &&
-            scriptBall.transform.position.z < FIELD_BOUNDARY_UPPER_Z)
-        {
-            DisplayErrorMessage("ball in the field cannot be lower than 0");
-        }
-    }
-
-    private void DisplayErrorMessage(string message)
-    {
-        Debug.Log("An error has occurred: " + message);
+//        PerformSanityChecks();
     }
 
     private int OtherTeam(int team)
@@ -360,7 +329,7 @@ public class Game : MonoBehaviour
     }
 
     // Move players that are too close in the direction of the center of the field
-    public void SetMinimumDistanceOtherPlayers(Player playerToTakeDistanceFrom)
+    public void SetMinimumDistanceOtherPlayers(HumanPlayer playerToTakeDistanceFrom)
     {
         foreach (Team team in teams)
         {
@@ -386,12 +355,12 @@ public class Game : MonoBehaviour
         PassDestinationPlayer = null;
         if (playerWithBall != null)
         {
-            if (player.Team.IsHuman && !player.PlayerInput.enabled)
+            if (player is HumanPlayer && !((HumanPlayer)player).PlayerInput.enabled)
             {
                 playerFollowCamera.Follow = player.PlayerCameraRoot;
                 activeHumanPlayer.PlayerInput.enabled = false;
-                activeHumanPlayer = player;
-                player.PlayerInput.enabled = true;
+                activeHumanPlayer = (HumanPlayer)player;
+                activeHumanPlayer.PlayerInput.enabled = true;
             }
             scriptBall.PutOnGround();
             player.HasBall = true;
@@ -406,7 +375,7 @@ public class Game : MonoBehaviour
         }
     }
 
-    public Player GetPlayerToThrowIn()
+    public HumanPlayer GetPlayerToThrowIn()
     {
         return PlayerClosestToBall(0);
         if (teamLastTouched==0)

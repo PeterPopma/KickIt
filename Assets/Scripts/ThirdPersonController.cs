@@ -87,7 +87,7 @@ public class ThirdPersonController : MonoBehaviour
 
 	private bool _hasAnimator;
 
-	private Player scriptPlayer;
+	private HumanPlayer scriptPlayer;
 
 	public float AnimationBlend { get => _animationBlend; set => _animationBlend = value; }
     public float InputMagnitude { get => inputMagnitude; set => inputMagnitude = value; }
@@ -100,7 +100,7 @@ public class ThirdPersonController : MonoBehaviour
 			_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 		}
 
-		scriptPlayer = GetComponent<Player>();
+		scriptPlayer = GetComponent<HumanPlayer>();
 	}
 
 	private void Start()

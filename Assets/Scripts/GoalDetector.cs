@@ -13,13 +13,16 @@ public class GoalDetector : MonoBehaviour
 
         if (other.GetComponent<Ball>() != null)
         {
-            if (name.EndsWith("0"))
+            if (!other.GetComponent<Ball>().IsOutOfField)
             {
-                Game.Instance.ScoreGoal(0);
-            }
-            else
-            {
-                Game.Instance.ScoreGoal(1);
+                if (name.EndsWith("0"))
+                {
+                    Game.Instance.ScoreGoal(0);
+                }
+                else
+                {
+                    Game.Instance.ScoreGoal(1);
+                }
             }
         }
     }

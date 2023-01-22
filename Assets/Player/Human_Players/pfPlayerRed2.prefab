@@ -109,7 +109,6 @@ GameObject:
   - component: {fileID: 1892760567712541293}
   - component: {fileID: 8221492040152590682}
   - component: {fileID: 1213929423255268401}
-  - component: {fileID: -2504314389171633149}
   - component: {fileID: 7108590992208759890}
   m_Layer: 3
   m_Name: pfPlayerRed2
@@ -351,19 +350,6 @@ MonoBehaviour:
     m_Bits: 0
   canPush: 0
   strength: 1.1
---- !u!114 &-2504314389171633149
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4816392482653789299}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f4e18b3ea16ec54f959f28fe31e97eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ballHandPosition: {fileID: 212520331773298821}
 --- !u!114 &7108590992208759890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -376,6 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c7a015d35b39be4187cdbb46eceb187, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ballHandPosition: {fileID: 212520331773298821}
 --- !u!1 &6034591838961267525
 GameObject:
   m_ObjectHideFlags: 0
@@ -400,7 +387,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6034591838961267525}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.019, y: -0.002, z: -0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
