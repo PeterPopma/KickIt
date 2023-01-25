@@ -8,7 +8,7 @@ public class Team
     int score;
     List<Player> players = new List<Player>();
     Player playerClosestToBall;
-    GoalKeeper goalKeeper;
+    Player goalKeeper;
 
     public Team(int number)
     {
@@ -19,5 +19,5 @@ public class Team
     public List<Player> Players { get => players; set => players = value; }
     public Player PlayerClosestToBall { get => playerClosestToBall; set => playerClosestToBall = value; }
     public int Score { get => score; set => score = value; }
-    public GoalKeeper GoalKeeper { get => goalKeeper; set => goalKeeper = value; }
+    public Player GoalKeeper { get => goalKeeper; set => goalKeeper = value; }
 }

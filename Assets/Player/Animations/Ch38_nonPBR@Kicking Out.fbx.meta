@@ -1,11 +1,8 @@
 fileFormatVersion: 2
-guid: e850c971dd27e7544b7772cc34cd86f3
+guid: 91c0867a9ccab574281d5414ab36915c
 ModelImporter:
   serializedVersion: 22200
-  internalIDToNameTable:
-  - first:
-      74: -203655887218126122
-    second: mixamo.com
+  internalIDToNameTable: []
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -357,48 +354,48 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: Ch38_nonPBR 1(Clone)
+    - name: Ch38_nonPBR(Clone)
       parentName: 
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Shorts
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Shirt
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Socks
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Body
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Shoes
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Eyelashes
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Ch38_Hair
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig5:Hips
-      parentName: Ch38_nonPBR 1(Clone)
+      parentName: Ch38_nonPBR(Clone)
       position: {x: -0.0000049817263, y: 0.9317931, z: 0.0076920623}
       rotation: {x: 0.0000009790463, y: -0.0000015214149, z: 0.000047493362, w: 1}
       scale: {x: 1, y: 1, z: 1}
@@ -734,7 +731,7 @@ ModelImporter:
     hasTranslationDoF: 0
     hasExtraRoot: 1
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 705c4cd9ffbe29642bfdda114dea427f,
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
     type: 3}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3

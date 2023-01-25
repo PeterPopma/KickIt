@@ -92,6 +92,7 @@ public class Game : MonoBehaviour
     public GameState_ NextGameState { get => nextGameState; set => nextGameState = value; }
     public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
     public Recorder Recorder { get => recorder; set => recorder = value; }
+    public Transform[] Goals { get => goals; set => goals = value; }
 
     private void InitGamePlayerVsPC()
     {
@@ -118,6 +119,7 @@ public class Game : MonoBehaviour
         goalkeeperRed.name = "Jaden";
         goalkeeperRed.GetComponent<HumanGoalkeeper>().Team = team1;
         team1.Players.Add(goalkeeperRed.GetComponent<HumanGoalkeeper>());
+        team1.GoalKeeper = goalkeeperRed.GetComponent<HumanGoalkeeper>();
 
         Team team2 = new Team(1);
         teams.Add(team2);
@@ -136,6 +138,7 @@ public class Game : MonoBehaviour
         goalkeeperBlue.name = "Maaike";
         goalkeeperBlue.GetComponent<AIGoalkeeper>().Team = team2;
         team2.Players.Add(goalkeeperBlue.GetComponent<AIGoalkeeper>());
+        team2.GoalKeeper = goalkeeperBlue.GetComponent<AIGoalkeeper>();
 
         playerBlue1.GetComponent<AIPlayer>().FellowPlayer = playerBlue2.GetComponent<AIPlayer>();
         playerBlue2.GetComponent<AIPlayer>().FellowPlayer = playerBlue1.GetComponent<AIPlayer>();
@@ -184,12 +187,16 @@ public class Game : MonoBehaviour
         scriptBall.Rigidbody.angularVelocity = Vector3.zero;
     }
 
-    public HumanPlayer PlayerClosestToBall(int teamNumber)
+    public Player FieldPlayerClosestToBall(int teamNumber)
     {
-        HumanPlayer closestPlayer = null;
+        Player closestPlayer = null;
         float closestDistance = float.MaxValue;
-        foreach(HumanPlayer player in teams[teamNumber].Players)
+        foreach(Player player in teams[teamNumber].Players)
         {
+            if (player == teams[teamNumber].GoalKeeper)
+            {
+                continue;
+            }
             float distance = (player.transform.position - scriptBall.transform.position).magnitude;
             if(distance < closestDistance)
             {
@@ -200,11 +207,11 @@ public class Game : MonoBehaviour
         return closestPlayer;
     }
 
-    public HumanPlayer PlayerClosestToLocation(int teamNumber, Vector3 location)
+    public Player PlayerClosestToLocation(int teamNumber, Vector3 location)
     {
-        HumanPlayer closestPlayer = null;
+        Player closestPlayer = null;
         float closestDistance = float.MaxValue;
-        foreach (HumanPlayer player in teams[teamNumber].Players)
+        foreach (Player player in teams[teamNumber].Players)
         {
             float distance = (player.transform.position - location).magnitude;
             if (distance < closestDistance)
@@ -234,8 +241,7 @@ public class Game : MonoBehaviour
     public void KickOff()
     {
         ResetPlayersAndBall();
-        ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
-        ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
+        ActiveHumanPlayer.MovementDisabled = true;
         nextGameState = GameState_.BringingBallIn;
         SetGameState(GameState_.WaitingForWhistle);
     }
@@ -250,12 +256,10 @@ public class Game : MonoBehaviour
             case GameState_.WaitingForWhistle:
                 break;
             case GameState_.Cheering:
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 0;
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 0;
+                ActiveHumanPlayer.MovementDisabled = true;
                 break;
             case GameState_.Replay:
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
+                ActiveHumanPlayer.MovementDisabled = false;
                 recorder.PlayBack(goalOfTeamLastScored);
                 break;
         }
@@ -276,8 +280,7 @@ public class Game : MonoBehaviour
         {
             if (Time.time - timeGameStateStarted > WAITING_FOR_WHISTLE_DURATION)
             {
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().MoveSpeed = 8;
-                ActiveHumanPlayer.GetComponent<ThirdPersonController>().SprintSpeed = 15;
+                ActiveHumanPlayer.MovementDisabled = false;
                 soundWhistle.Play();
                 SetGameState(nextGameState);
                 scriptBall.IsOutOfField = false;
@@ -329,7 +332,7 @@ public class Game : MonoBehaviour
     }
 
     // Move players that are too close in the direction of the center of the field
-    public void SetMinimumDistanceOtherPlayers(HumanPlayer playerToTakeDistanceFrom)
+    public void SetMinimumDistanceOtherPlayers(Player playerToTakeDistanceFrom)
     {
         foreach (Team team in teams)
         {
@@ -375,17 +378,14 @@ public class Game : MonoBehaviour
         }
     }
 
-    public HumanPlayer GetPlayerToThrowIn()
+    public Player GetPlayerToThrowIn()
     {
-        return PlayerClosestToBall(0);
-        if (teamLastTouched==0)
-        {
-            return PlayerClosestToBall(1);
-        }
-        else
-        {
-            return PlayerClosestToBall(0);
-        }
+        return FieldPlayerClosestToBall(OtherTeam(teamLastTouched));
+    }
+
+    public Player GetPlayerToGoalKick()
+    {
+        return teams[OtherTeam(teamLastTouched)].GoalKeeper;
     }
 
 

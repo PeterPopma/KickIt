@@ -21,6 +21,8 @@ public class Player : MonoBehaviour
     private AudioSource soundDribble;
     private AudioSource soundShoot;
     private AudioSource soundSteal;
+    private AudioSource soundSlide;
+    private AudioSource soundOuch;
     private PlayerAction playerAction;
     private float distanceSinceLastDribble;
     private float takeBallDelay;       // after the player has lost the ball, he cannot steal it back for some time
@@ -28,6 +30,7 @@ public class Player : MonoBehaviour
     private bool hasBall;
     private bool doingThrow;
     private bool doingKick;
+    private bool movementDisabled;
 
     public bool HasBall { get => hasBall; set => hasBall = value; }
     public Transform PlayerBallPosition { get => playerBallPosition; set => playerBallPosition = value; }
@@ -41,15 +44,20 @@ public class Player : MonoBehaviour
     public Transform BallHandPosition { get => ballHandPosition; set => ballHandPosition = value; }
     public Transform TransformBall { get => transformBall; set => transformBall = value; }
     public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
+    public Team Team { get => team; set => team = value; }
+    public bool MovementDisabled { get => movementDisabled; set => movementDisabled = value; }
+    public AudioSource SoundSlide { get => soundSlide; set => soundSlide = value; }
 
     protected void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator = transform.Find("Geometry/Root").GetComponent<Animator>();
         transformBall = GameObject.Find("Ball").transform;
         scriptBall = transformBall.GetComponent<Ball>();
         soundDribble = GameObject.Find("Sound/dribble").GetComponent<AudioSource>();
         soundShoot = GameObject.Find("Sound/shoot").GetComponent<AudioSource>();
-        soundSteal = GameObject.Find("Sound/woosh").GetComponent<AudioSource>();
+        soundSteal = GameObject.Find("Sound/takeball").GetComponent<AudioSource>();
+        soundSlide = GameObject.Find("Sound/slide").GetComponent<AudioSource>();
+        soundOuch = GameObject.Find("Sound/ouch").GetComponent<AudioSource>();
         PlayerBallPosition = transform.Find("BallPosition");
         rigidbodyBall = transformBall.gameObject.GetComponent<Rigidbody>();
         PlayerCameraRoot = transform.Find("PlayerCameraRoot");
@@ -77,7 +85,7 @@ public class Player : MonoBehaviour
             if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
             {
                 // Player did not respond, so execute kick in for him
-                SetPlayerAction(ActionType_.Shot, 0.1f);
+                SetPlayerAction(ActionType_.Shot, 0.2f);
             }
         }
 
@@ -89,7 +97,7 @@ public class Player : MonoBehaviour
             if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
             {
                 // Player did not respond, so execute throw in for him
-                SetPlayerAction(ActionType_.ThrowinShot, 0.1f);
+                SetPlayerAction(ActionType_.ThrowinShot, 0.2f);
             }
         }
     }
@@ -122,7 +130,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void CheckTakeBall()
+    public void CheckTakeBall()
     {
         float distanceToBall = Vector3.Distance(transformBall.position, PlayerBallPosition.position);
         if (distanceToBall < 0.6)
@@ -137,6 +145,25 @@ public class Player : MonoBehaviour
                 Game.Instance.PlayerWithBall.LooseBall();
             }
             Game.Instance.SetPlayerWithBall(this);
+        }
+    }
+
+    public void TacklePlayers()
+    {
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 2.0f);
+
+        foreach (Collider collider in colliders)
+        {
+            Player player = collider.gameObject.GetComponent<HumanFieldPlayer>();
+            if (player == null)
+            {
+                player = collider.gameObject.GetComponent<AIFieldPlayer>();
+            }
+            if (player != null && player != this)
+            {
+                soundOuch.Play();
+                player.SetPlayerAction(ActionType_.Fall);
+            }
         }
     }
 
@@ -163,11 +190,11 @@ public class Player : MonoBehaviour
         // Any running action must be finished before you can order a new action
         if (!playerAction.Running)
         {
-            playerAction.Set(actionType, power);
+            playerAction.StartAction(actionType, power);
         }
         else
         {
-            Debug.Log("action still running!");
+            Debug.Log("action still running! aniation layer weight: " + animator.GetLayerWeight(playerAction.PlayerAnimation.Layer));
         }
     }
 
@@ -179,7 +206,7 @@ public class Player : MonoBehaviour
         Vector3 shootdirection = transform.forward;
         shootdirection.y += 0.3f;
         Debug.DrawLine(transform.position, transform.position + shootdirection * 10f, Color.white, 2.5f);
-        rigidbodyBall.AddForce(shootdirection * (10 + shootingPower * 25f), ForceMode.VelocityChange);
+        rigidbodyBall.AddForce(shootdirection * (5 + shootingPower * 25f), ForceMode.VelocityChange);
         //       rigidbodyBall.AddForce(new Vector3(0,0.3f,0)*20f, ForceMode.VelocityChange);
         LooseBall();
     }
@@ -199,5 +226,4 @@ public class Player : MonoBehaviour
         GetComponent<CharacterController>().enabled = true;
     }
 
-    public Team Team { get => team; set => team = value; }
 }

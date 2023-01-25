@@ -11,6 +11,7 @@ public class InputSystem : MonoBehaviour
 	public bool shoot;
 	public bool pass;
 	public bool changeQuality;
+	public bool test;
 
 	[Header("Movement Settings")]
 	public bool analogMovement;
@@ -59,6 +60,12 @@ public class InputSystem : MonoBehaviour
 		ChangeQualityInput(value.isPressed);
 	}
 
+	public void OnTest(InputValue value)
+	{
+		TestInput(value.isPressed);
+	}
+
+
 	public void MoveInput(Vector2 newMoveDirection)
 	{
 		move = newMoveDirection;
@@ -90,6 +97,11 @@ public class InputSystem : MonoBehaviour
 	public void PassInput(bool newPassState)
 	{
 		pass = newPassState;
+	}
+
+	public void TestInput(bool newPassState)
+	{
+		test = newPassState;
 	}
 
 #if !UNITY_IOS || !UNITY_ANDROID

@@ -60,16 +60,11 @@ public class Ball : MonoBehaviour
         transform.position = ballOutOfFieldposition;
         rigidbody.velocity = Vector3.zero;
         rigidbody.angularVelocity = Vector3.zero;
-        HumanPlayer player = Game.Instance.GetPlayerToThrowIn();
-        player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
-        // Look in the directon of the field. Otherwise the ball will be out of field again.
-        player.transform.LookAt(Game.Instance.KickOffPosition);
-        player.TimePlayerActionRequested = Time.time;
-        Game.Instance.SetPlayerWithBall(player);
-        Game.Instance.NextGameState = GameState_.BringingBallIn;
-        Game.Instance.SetGameState(GameState_.WaitingForWhistle);
+        Player player;
+
         if (isThrowIn)
         {
+            player = Game.Instance.GetPlayerToThrowIn();
             player.Animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
             player.Animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
             player.DoingThrow = true;
@@ -78,10 +73,18 @@ public class Ball : MonoBehaviour
         }
         else
         {
+            player = Game.Instance.GetPlayerToGoalKick();
             player.DoingKick = true;
             transform.position = player.PlayerBallPosition.position;
         }
         transform.parent = player.transform;
+        player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
+        // Look in the directon of the field.
+        player.transform.LookAt(Game.Instance.KickOffPosition);
+        player.TimePlayerActionRequested = Time.time;
+        Game.Instance.SetPlayerWithBall(player);
+        Game.Instance.NextGameState = GameState_.BringingBallIn;
+        Game.Instance.SetGameState(GameState_.WaitingForWhistle);
 
         // move players that are too close
         Game.Instance.SetMinimumDistanceOtherPlayers(player);

@@ -9,12 +9,12 @@ public class AIFieldPlayer : AIPlayer
     private Vector3 ownGoalPosition;
     private Vector3[] attackTargetLocation = new Vector3[2];
 
-    void Awake()
+    new void Awake()
     {
         base.Awake();
     }
 
-    void Start()
+    new void Start()
     {
         base.Start();
 
@@ -24,7 +24,7 @@ public class AIFieldPlayer : AIPlayer
         attackTargetLocation[1] = new Vector3(38f, Game.PLAYER_Y_POSITION, -10f);
     }
 
-    void Update()
+    new void Update()
     {
         base.Update();
 
@@ -79,7 +79,7 @@ public class AIFieldPlayer : AIPlayer
     // player farthest from ball moves between goal and player closest to goal
     private void DefendMode()
     {
-        if (Game.Instance.PlayerClosestToBall(1) == this)
+        if (Game.Instance.FieldPlayerClosestToBall(1) == this)
         {
             MoveToBall();
         }

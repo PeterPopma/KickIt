@@ -103,7 +103,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3341894964177032790}
-  - component: {fileID: 8089662170700356061}
   - component: {fileID: 978530701342954879}
   - component: {fileID: 6146646197134192931}
   - component: {fileID: 1892760567712541293}
@@ -135,26 +134,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &8089662170700356061
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4816392482653789299}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 6ee75cea565c5da44a5bc41845817008, type: 3}
-  m_Controller: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
 --- !u!143 &978530701342954879
 CharacterController:
   m_ObjectHideFlags: 0
@@ -674,7 +653,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 6ee75cea565c5da44a5bc41845817008,
         type: 3}
       propertyPath: m_Name
-      value: Ch02_nonPBR
+      value: Root
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6ee75cea565c5da44a5bc41845817008,
         type: 3}
@@ -776,6 +755,16 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 6ee75cea565c5da44a5bc41845817008,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 6ee75cea565c5da44a5bc41845817008,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6240733294840144465, guid: 6ee75cea565c5da44a5bc41845817008,
         type: 3}
       propertyPath: m_Layer
@@ -821,8 +810,7 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 5866666021909216657, guid: 6ee75cea565c5da44a5bc41845817008, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: 6ee75cea565c5da44a5bc41845817008,

@@ -8,7 +8,9 @@ public enum ActionType_
     ThrowinShot,
     Pass,
     Shot,
-    Cheer
+    Cheer,
+    Tackle,
+    Fall
 }
 
 public class PlayerAction
@@ -16,9 +18,15 @@ public class PlayerAction
     public const float ANIMATION_DURATION_KICK = 0.5f;
     public const float ANIMATION_DURATION_THROWIN = 2.0f;
     public const float ANIMATION_DURATION_CHEERING = 4.0f;
+    public const float ANIMATION_DURATION_TACKLE = 0.5f;
+    public const float ANIMATION_DURATION_FALL = 1.7f;
 
     public const float DELAY_KICK = 0.0f;
     public const float DELAY_THROW = 0.1f;
+    public const float DELAY_TACKLE = 0.2f;
+
+    public const float FADE_IN_TIME = 0.2f;
+    public const float FADE_OUT_TIME = 0.2f;
 
     private float timeStarted;
     private float durationActionDelay;
@@ -26,6 +34,7 @@ public class PlayerAction
     private PlayerAnimation playerAnimation;
     private float power;
     private bool running;
+    private bool excuted;
     private Player player;
     private Animator animator;
 
@@ -48,32 +57,51 @@ public class PlayerAction
         {
             if (playerAnimation.FadeIn)
             {
-                animator.SetLayerWeight(playerAnimation.Layer, Mathf.Lerp(animator.GetLayerWeight(playerAnimation.Layer), 1f, Time.deltaTime * 10f));
+                animator.SetLayerWeight(playerAnimation.Layer, Mathf.Lerp(animator.GetLayerWeight(playerAnimation.Layer), 1f, (Time.time - timeStarted) / FADE_IN_TIME));
             }
 
             if (Time.time - timeStarted > playerAnimation.Duration)
             {
                 if (playerAnimation.FadeOut)
                 {
-                    animator.SetLayerWeight(playerAnimation.Layer, Mathf.Lerp(animator.GetLayerWeight(playerAnimation.Layer), 0f, Time.deltaTime * 10f));
+                    float timeSinceEnded = (Time.time - timeStarted) - playerAnimation.Duration;
+                    animator.SetLayerWeight(playerAnimation.Layer, Mathf.Lerp(animator.GetLayerWeight(playerAnimation.Layer), 0f, timeSinceEnded / FADE_OUT_TIME));
                 }
                 else
                 {
                     animator.SetLayerWeight(playerAnimation.Layer, 0);
                 }
 
-                if (animator.GetLayerWeight(playerAnimation.Layer) == 0)
+                if (animator.GetLayerWeight(playerAnimation.Layer) < 0.05)
                 {
-                    playerAnimation = null;
+                    OnActionFinished();
                 }
             }
         }
     }
 
-    public void Set(ActionType_ actionType, float power)
+    private void OnActionFinished()
     {
+        Debug.Log("finished animation: " + playerAnimation.Layer.ToString() + " time: " + Time.time);
+        running = false;
+        playerAnimation = null;
+        switch (actionType)
+        {
+            case ActionType_.Tackle:
+                player.MovementDisabled = false;
+                break;
+            case ActionType_.Fall:
+                player.MovementDisabled = false;
+                break;
+        }
+    }
+
+    public void StartAction(ActionType_ actionType, float power)
+    {
+        Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
         this.actionType = actionType;
         this.power = power;
+        excuted = false;
         running = true;
         timeStarted = Time.time;
         switch (actionType)
@@ -106,12 +134,23 @@ public class PlayerAction
                 durationActionDelay = ANIMATION_DURATION_CHEERING;
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_CHEERING, false, false, PlayerAnimation.LAYER_CHEER, "Cheer");
                 break;
+
+            case ActionType_.Tackle:
+                player.SoundSlide.Play();
+                durationActionDelay = DELAY_TACKLE;
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_TACKLE, true, true, PlayerAnimation.LAYER_TACKLE, "Tackle");
+                break;
+
+            case ActionType_.Fall:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_FALL, true, true, PlayerAnimation.LAYER_FALL, "Fall", 0.4f);
+                break;
         }
     }
 
-    private void Execute()
+    private void ExecuteAction()
     {
-        running = false;
+        excuted = true;
+        Debug.Log("executed action: " + actionType.ToString() + " time: " + Time.time);
         player.TransformBall.parent = null;
 
         switch (actionType)
@@ -143,19 +182,32 @@ public class PlayerAction
             case ActionType_.Cheer:
                 Game.Instance.SetGameState(GameState_.Replay);
                 break;
+
+            case ActionType_.Tackle:
+                player.TacklePlayers();
+                player.MovementDisabled = true;
+                break;
+
+            case ActionType_.Fall:
+                player.MovementDisabled = true;
+                break;
         }
     }
 
 
     public void Update()
     {
+        if (!running)
+        {
+            return;
+        }
         if (!Game.Instance.GameState.Equals(GameState_.Replay))
         {
             HandleAnimation();
         }
-        if (running && Time.time - timeStarted >= durationActionDelay)
+        if (!excuted && Time.time - timeStarted >= durationActionDelay)
         {
-            Execute();
+            ExecuteAction();
         }
         if (running && (actionType.Equals(ActionType_.ThrowinShot) || actionType.Equals(ActionType_.ThrowinPass)))
         {

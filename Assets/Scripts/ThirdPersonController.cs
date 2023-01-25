@@ -105,7 +105,9 @@ public class ThirdPersonController : MonoBehaviour
 
 	private void Start()
 	{
-		_hasAnimator = TryGetComponent(out _animator);
+		_animator = transform.Find("Geometry/Root").GetComponent<Animator>();
+		_hasAnimator = _animator != null;
+		//_hasAnimator = transform.Find("Geometry/Root").TryGetComponent(out _animator);
 		_controller = GetComponent<CharacterController>();
 		_input = GetComponent<InputSystem>();
 
@@ -123,6 +125,11 @@ public class ThirdPersonController : MonoBehaviour
 
 	private void Update()
 	{
+		if (scriptPlayer.MovementDisabled)
+        {
+			return;
+        }
+
 		if (Game.Instance.GameState.Equals(GameState_.WaitingForWhistle) || Game.Instance.GameState.Equals(GameState_.BringingBallIn))
 		{
 			RotatePlayerWithView();
@@ -134,7 +141,7 @@ public class ThirdPersonController : MonoBehaviour
 			return;
 		}
 
-		_hasAnimator = TryGetComponent(out _animator);
+//		_hasAnimator = TryGetComponent(out _animator);
 
 		JumpAndGravity();
 		GroundedCheck();

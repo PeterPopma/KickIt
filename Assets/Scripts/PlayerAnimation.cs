@@ -7,6 +7,8 @@ public class PlayerAnimation
     public const int LAYER_SHOOT = 1;
     public const int LAYER_CHEER = 2;
     public const int LAYER_THROW_IN = 3;
+    public const int LAYER_TACKLE = 4;
+    public const int LAYER_FALL = 5;
 
     private Animator animator;
     float duration;

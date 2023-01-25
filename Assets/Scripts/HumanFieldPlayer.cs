@@ -4,21 +4,29 @@ using UnityEngine;
 
 public class HumanFieldPlayer : HumanPlayer
 {
-    private float shootingPower;
-
-    void Awake()
+    new void Awake()
     {
         base.Awake();
     }
 
-    void Start()
+    new void Start()
     {
         base.Start();
     }
 
-    void Update()
+    new void Update()
     {
         base.Update();
+
+        if (inputSystem.test)
+        {
+            inputSystem.test = false;
+            Game.Instance.Teams[1].Players[0].transform.position = new Vector3(16.2700005f, 0.5f, 0.100000001f);
+            Game.Instance.Teams[1].Players[0].LookAt(Game.Instance.Goals[0]);
+            ScriptBall.transform.position = Game.Instance.Teams[1].Players[0].PlayerBallPosition.position;
+            Game.Instance.Teams[1].Players[0].CheckTakeBall();
+            Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, 1f);
+        }
 
         if (DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)
         {
@@ -44,53 +52,6 @@ public class HumanFieldPlayer : HumanPlayer
                     SetPlayerAction(ActionType_.ThrowinShot, shootingPower);
                 }
                 shootingPower = 0;
-            }
-        }
-
-        if (Game.Instance.GameState == GameState_.Playing ||
-            (Game.Instance.GameState == GameState_.BringingBallIn && DoingKick))
-        {
-            if (HasBall)
-            {
-                if (inputSystem.pass)
-                {
-                    inputSystem.pass = false;
-                    SetPlayerAction(ActionType_.Pass);
-                }
-
-                if (inputSystem.shoot)
-                {
-                    shootingPower += 1.5f * Time.deltaTime;
-                    Game.Instance.SetPowerBar(shootingPower);
-                    if (shootingPower > 1)
-                    {
-                        shootingPower = 1;
-                    }
-                }
-                else
-                {
-                    if (shootingPower > 0)
-                    {
-                        SetPlayerAction(ActionType_.Shot, shootingPower);
-                    }
-                    shootingPower = 0;
-                }
-            }
-            else
-            {
-                if (inputSystem.pass)
-                {
-                    inputSystem.pass = false;
-                    SwitchActivePlayer();
-                }
-            }
-        }
-
-        if (Game.Instance.GameState == GameState_.Replay)
-        {
-            if (inputSystem.shoot)
-            {
-                Game.Instance.Recorder.EndReplay();
             }
         }
     }

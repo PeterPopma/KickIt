@@ -1,5 +1,5 @@
 {
-    "name": "StarterAssets",
+    "name": "InputSystem",
     "maps": [
         {
             "name": "Player",
@@ -63,6 +63,15 @@
                     "name": "ChangeQuality",
                     "type": "Button",
                     "id": "45c970e9-eb58-4533-81ac-7d85da67daf7",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Test",
+                    "type": "Button",
+                    "id": "73a3794d-53e4-4c79-8719-56cbebdd022b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -320,6 +329,17 @@
                     "processors": "",
                     "groups": "KeyboardMouse",
                     "action": "ChangeQuality",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bffa83c0-67d2-4f3e-bea2-6e3d993d5133",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Test",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
