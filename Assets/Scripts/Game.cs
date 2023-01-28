@@ -112,14 +112,15 @@ public class Game : MonoBehaviour
         playerRed2.GetComponent<PlayerInput>().enabled = false;
         team1.Players.Add(playerRed2.GetComponent<HumanFieldPlayer>());
 
-        playerRed1.GetComponent<HumanFieldPlayer>().FellowPlayer = playerRed2.GetComponent<HumanFieldPlayer>();
-        playerRed2.GetComponent<HumanFieldPlayer>().FellowPlayer = playerRed1.GetComponent<HumanFieldPlayer>();
-
         GameObject goalkeeperRed = Instantiate(pfGoalkeeperRed, spawnPositionGoalkeeperRed.transform.position, spawnPositionGoalkeeperRed.transform.rotation);
         goalkeeperRed.name = "Jaden";
         goalkeeperRed.GetComponent<HumanGoalkeeper>().Team = team1;
         team1.Players.Add(goalkeeperRed.GetComponent<HumanGoalkeeper>());
         team1.GoalKeeper = goalkeeperRed.GetComponent<HumanGoalkeeper>();
+
+        playerRed1.GetComponent<HumanFieldPlayer>().NextPlayer = playerRed2.GetComponent<HumanFieldPlayer>(); 
+        playerRed2.GetComponent<HumanFieldPlayer>().NextPlayer = goalkeeperRed.GetComponent<HumanGoalkeeper>();
+        goalkeeperRed.GetComponent<HumanGoalkeeper>().NextPlayer = playerRed1.GetComponent<HumanFieldPlayer>();
 
         Team team2 = new Team(1);
         teams.Add(team2);
@@ -140,8 +141,10 @@ public class Game : MonoBehaviour
         team2.Players.Add(goalkeeperBlue.GetComponent<AIGoalkeeper>());
         team2.GoalKeeper = goalkeeperBlue.GetComponent<AIGoalkeeper>();
 
-        playerBlue1.GetComponent<AIPlayer>().FellowPlayer = playerBlue2.GetComponent<AIPlayer>();
-        playerBlue2.GetComponent<AIPlayer>().FellowPlayer = playerBlue1.GetComponent<AIPlayer>();
+        playerBlue1.GetComponent<AIPlayer>().NextPlayer = playerBlue2.GetComponent<AIPlayer>(); 
+        playerBlue2.GetComponent<AIPlayer>().NextPlayer = goalkeeperBlue.GetComponent<AIGoalkeeper>();
+        goalkeeperBlue.GetComponent<AIGoalkeeper>().NextPlayer = playerBlue1.GetComponent<AIPlayer>();
+
     }
 
     public void Awake()
@@ -388,5 +391,15 @@ public class Game : MonoBehaviour
         return teams[OtherTeam(teamLastTouched)].GoalKeeper;
     }
 
+    public Player FindNextFieldPLayer(Player player)
+    {
+        do
+        {
+            player = player.NextPlayer;
+        }
+        while (player is HumanGoalkeeper);
+
+        return player;
+    }
 
 }

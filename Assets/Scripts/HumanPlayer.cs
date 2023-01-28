@@ -105,8 +105,9 @@ public class HumanPlayer : Player
     public void SwitchActivePlayer()
     {
         PlayerInput.enabled = false;
-        ((HumanPlayer)fellowPlayer).Activate();
-        playerFollowCamera.Follow = fellowPlayer.PlayerCameraRoot;
+        Player nextPlayer = Game.Instance.FindNextFieldPLayer(this);
+        ((HumanPlayer)nextPlayer).Activate();
+        playerFollowCamera.Follow = nextPlayer.PlayerCameraRoot;
     }
 
 }

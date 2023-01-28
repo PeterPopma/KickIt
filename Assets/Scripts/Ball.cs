@@ -35,12 +35,6 @@ public class Ball : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void Pass(Player player)
-    {
-        timePassedBall = Time.time;
-        Game.Instance.PassDestinationPlayer = player.FellowPlayer;
-    }
-
     public void PutOnGround()
     {
         transform.position = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, transform.position.z);
@@ -188,7 +182,7 @@ public class Ball : MonoBehaviour
 
         if (Game.Instance.PassDestinationPlayer != null)
         {
-            PassBall();
+            UpdatePass();
         }
         else if (Game.Instance.PlayerWithBall != null)
         {
@@ -210,14 +204,19 @@ public class Ball : MonoBehaviour
         transform.Rotate(rotationAxis, -speed.magnitude * 1.8f, Space.World);
     }
 
-    private void PassBall()
+    public void ExecutePass(Player player)
+    {
+        timePassedBall = Time.time;
+    }
+    
+    private void UpdatePass()
     {
         if (Game.Instance.PassDestinationPlayer is HumanPlayer)
         {
             if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PassDestinationPlayer.PlayerCameraRoot)
             {
                 // switch player
-                ((HumanPlayer)Game.Instance.PassDestinationPlayer.FellowPlayer).PlayerInput.enabled = false;
+                // ((HumanPlayer)Game.Instance.PassDestinationPlayer.FellowPlayer).PlayerInput.enabled = false;
                 ((HumanPlayer)Game.Instance.PassDestinationPlayer).Activate();
                 playerFollowCamera.Follow = Game.Instance.PassDestinationPlayer.PlayerCameraRoot;
             }
