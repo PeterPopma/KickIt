@@ -220,6 +220,7 @@ public class Player : MonoBehaviour
         if (Game.Instance.PassDestinationPlayer is HumanPlayer)
         {
             ((HumanPlayer)this).PlayerInput.enabled = false;
+            ((HumanPlayer)Game.Instance.PassDestinationPlayer).Activate();
         }
         scriptBall.ExecutePass(this);
     }

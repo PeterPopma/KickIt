@@ -26,6 +26,7 @@ public class HumanFieldPlayer : HumanPlayer
             ScriptBall.transform.position = Game.Instance.Teams[1].Players[0].PlayerBallPosition.position;
             Game.Instance.Teams[1].Players[0].CheckTakeBall();
             Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, 1f);
+            Game.Instance.SetPlayerWithBall(Game.Instance.Teams[1].Players[0]);
         }
 
         if (DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)

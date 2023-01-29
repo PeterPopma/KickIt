@@ -82,7 +82,7 @@ public class PlayerAction
 
     private void OnActionFinished()
     {
-        Debug.Log("finished animation: " + playerAnimation.Layer.ToString() + " time: " + Time.time);
+        //Debug.Log("finished animation: " + playerAnimation.Layer.ToString() + " time: " + Time.time);
         running = false;
         playerAnimation = null;
         switch (actionType)
@@ -98,7 +98,7 @@ public class PlayerAction
 
     public void StartAction(ActionType_ actionType, float power)
     {
-        Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
+        //Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
         this.actionType = actionType;
         this.power = power;
         excuted = false;
@@ -150,7 +150,7 @@ public class PlayerAction
     private void ExecuteAction()
     {
         excuted = true;
-        Debug.Log("executed action: " + actionType.ToString() + " time: " + Time.time);
+        //Debug.Log("executed action: " + actionType.ToString() + " time: " + Time.time);
         player.TransformBall.parent = null;
 
         switch (actionType)

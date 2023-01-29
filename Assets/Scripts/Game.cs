@@ -56,6 +56,8 @@ public class Game : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textPlayer;
     [SerializeField] private TextMeshProUGUI textReplay;
     [SerializeField] private Transform[] goals;
+    [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam0;
+    [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam1;
     private GameMode_ gameMode;
     private GameState_ gameState;
     private GameState_ nextGameState;
@@ -93,6 +95,8 @@ public class Game : MonoBehaviour
     public Ball ScriptBall { get => scriptBall; set => scriptBall = value; }
     public Recorder Recorder { get => recorder; set => recorder = value; }
     public Transform[] Goals { get => goals; set => goals = value; }
+    public CinemachineVirtualCamera GoalKeeperCameraTeam0 { get => goalKeeperCameraTeam0; set => goalKeeperCameraTeam0 = value; }
+    public CinemachineVirtualCamera GoalKeeperCameraTeam1 { get => goalKeeperCameraTeam1; set => goalKeeperCameraTeam1 = value; }
 
     private void InitGamePlayerVsPC()
     {

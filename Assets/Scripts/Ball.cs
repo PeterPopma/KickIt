@@ -189,6 +189,16 @@ public class Ball : MonoBehaviour
             transform.position = Game.Instance.PlayerWithBall.PlayerBallPosition.position;
         }
 
+        //Debug.Log(speed.x);
+
+        if (transform.position.x > 15 && speed.x > 10 && Game.Instance.TeamLastTouched == 1)
+        {
+            Game.Instance.GoalKeeperCameraTeam0.enabled = true;
+        }
+    }
+
+    void FixedUpdate()
+    {
         UpdateBallSpeedAndRotation();
     }
 
@@ -216,8 +226,6 @@ public class Ball : MonoBehaviour
             if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PassDestinationPlayer.PlayerCameraRoot)
             {
                 // switch player
-                // ((HumanPlayer)Game.Instance.PassDestinationPlayer.FellowPlayer).PlayerInput.enabled = false;
-                ((HumanPlayer)Game.Instance.PassDestinationPlayer).Activate();
                 playerFollowCamera.Follow = Game.Instance.PassDestinationPlayer.PlayerCameraRoot;
             }
         }
