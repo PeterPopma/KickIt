@@ -9,11 +9,9 @@ using UnityEngine.UI;
 public class HumanPlayer : Player
 {
     public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
-    public ThirdPersonController ScriptThirdPersonController { get => scriptThirdPersonController; set => scriptThirdPersonController = value; }
 
     protected InputSystem inputSystem;
     protected float shootingPower;
-    private ThirdPersonController scriptThirdPersonController;
     private CinemachineVirtualCamera playerFollowCamera;
     private PlayerInput playerInput;
 
@@ -23,7 +21,6 @@ public class HumanPlayer : Player
         base.Awake();
 
         playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
-        scriptThirdPersonController = GetComponent<ThirdPersonController>();
         inputSystem = GetComponent<InputSystem>(); 
         playerInput = GetComponent<PlayerInput>();
     }
@@ -37,8 +34,20 @@ public class HumanPlayer : Player
     {
         base.Update();
 
+        if (Game.Instance.GameState != GameState_.Replay)
+        {
+            if (inputSystem.test)
+            {
+                inputSystem.test = false;
+                Game.Instance.TerminateAllRunningActions();
+                Game.Instance.PlayerTakingPenalty = Game.Instance.Teams[1].Players[0];
+                Game.Instance.NextGameState = GameState_.Penalty;
+                Game.Instance.SetGameState(GameState_.WaitingForWhistle);
+            }
+        }
+
         if (Game.Instance.GameState == GameState_.Playing ||
-     (Game.Instance.GameState == GameState_.BringingBallIn && DoingKick))
+            (Game.Instance.GameState == GameState_.BringingBallIn && DoingKick))
         {
             if (inputSystem.pass)
             {
@@ -49,7 +58,7 @@ public class HumanPlayer : Player
                 }
                 else
                 {
-                    SwitchActivePlayer();
+                    ActivateNextFieldPlayer();
                 }
             }
 
@@ -68,8 +77,11 @@ public class HumanPlayer : Player
                 }
                 else
                 {
-                    inputSystem.shoot = false;
-                    SetPlayerAction(ActionType_.Tackle);
+                    if (!(this.GetType() == typeof(HumanGoalkeeper)))
+                    {
+                        inputSystem.shoot = false;
+                        SetPlayerAction(ActionType_.Tackle);
+                    }
                 }
             }
 
@@ -78,33 +90,26 @@ public class HumanPlayer : Player
                 SetPlayerAction(ActionType_.Shot, shootingPower);
                 shootingPower = 0;
             }
-
-            if (Game.Instance.GameState == GameState_.Replay)
-            {
-                if (inputSystem.shoot)
-                {
-                    Game.Instance.Recorder.EndReplay();
-                }
-            }
         }
 
         if (Game.Instance.GameState == GameState_.Replay)
         {
             if (inputSystem.shoot)
             {
+                inputSystem.shoot = false;
                 Game.Instance.Recorder.EndReplay();
             }
         }
     }
     public void Activate()
     {
+        Game.Instance.ActiveHumanPlayer.PlayerInput.enabled = false;
         Game.Instance.ActiveHumanPlayer = this;
         playerInput.enabled = true;
     }
 
-    public void SwitchActivePlayer()
+    public void ActivateNextFieldPlayer()
     {
-        PlayerInput.enabled = false;
         Player nextPlayer = Game.Instance.FindNextFieldPLayer(this);
         ((HumanPlayer)nextPlayer).Activate();
         playerFollowCamera.Follow = nextPlayer.PlayerCameraRoot;

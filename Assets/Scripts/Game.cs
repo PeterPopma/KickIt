@@ -19,6 +19,7 @@ public enum GameState_
     WaitingForWhistle,
     BringingBallIn,
     Cheering,
+    Penalty,
     Replay,
     MatchOver
 }
@@ -30,8 +31,8 @@ public class Game : MonoBehaviour
     public const float DELAY_SCOREGOAL = 0.5f;                  // Wait a little bit after scoring to show at playback
     public const float HAVING_BALL_SLOWDOWN_FACTOR = 0.8f;
     public const float PLAYER_Y_POSITION = 0.5f;
-    public const float FIELD_BOUNDARY_LOWER_X = -52.894f;
-    public const float FIELD_BOUNDARY_UPPER_X = 52.725f;
+    public const float FIELD_BOUNDARY_LOWER_X = -53.047f;
+    public const float FIELD_BOUNDARY_UPPER_X = 52.873f;
     public const float FIELD_BOUNDARY_LOWER_Z = -25.37f;
     public const float FIELD_BOUNDARY_UPPER_Z = 25.552f;
     public const float MINIMUM_DISTANCE_FREEKICK = 18f;
@@ -68,6 +69,7 @@ public class Game : MonoBehaviour
     private AudioSource soundWhistle;
     private Player playerLastTouchedBall;
     private Player playerWithBall;
+    private Player playerTakingPenalty;
     private HumanPlayer activeHumanPlayer;
     private Player passDestinationPlayer;
     private CinemachineVirtualCamera playerFollowCamera;
@@ -79,7 +81,7 @@ public class Game : MonoBehaviour
     private float delayScoreGoal;
     private List<Team> teams = new();
     private Vector3 kickOffPosition = new Vector3(0, PLAYER_Y_POSITION, 0.1f);
-    private Image crosshairAim;
+//    private Image crosshairAim;
     private int goalOfTeamLastScored;
 
     public Player PassDestinationPlayer { get => passDestinationPlayer; set => passDestinationPlayer = value; }
@@ -97,6 +99,8 @@ public class Game : MonoBehaviour
     public Transform[] Goals { get => goals; set => goals = value; }
     public CinemachineVirtualCamera GoalKeeperCameraTeam0 { get => goalKeeperCameraTeam0; set => goalKeeperCameraTeam0 = value; }
     public CinemachineVirtualCamera GoalKeeperCameraTeam1 { get => goalKeeperCameraTeam1; set => goalKeeperCameraTeam1 = value; }
+    public GameObject SpawnPositionGoalkeeperRed { get => spawnPositionGoalkeeperRed; set => spawnPositionGoalkeeperRed = value; }
+    public Player PlayerTakingPenalty { get => playerTakingPenalty; set => playerTakingPenalty = value; }
 
     private void InitGamePlayerVsPC()
     {
@@ -106,6 +110,7 @@ public class Game : MonoBehaviour
         GameObject playerRed1 = Instantiate(pfPlayerRed1, spawnPositionPlayerRed1.transform.position, Quaternion.identity);
         playerRed1.name = "Peter";
         playerRed1.GetComponent<HumanFieldPlayer>().Team = team1;
+        Game.Instance.ActiveHumanPlayer = playerRed1.GetComponent<HumanFieldPlayer>(); 
         playerRed1.GetComponent<HumanFieldPlayer>().Activate();
         team1.Players.Add(playerRed1.GetComponent<HumanFieldPlayer>());
         playerFollowCamera.Follow = playerRed1.transform.Find("PlayerCameraRoot").transform;
@@ -154,7 +159,7 @@ public class Game : MonoBehaviour
     public void Awake()
     {
         Instance = this;
-        crosshairAim = GameObject.Find("Canvas/CrosshairAim").GetComponent<Image>();
+        //crosshairAim = GameObject.Find("Canvas/CrosshairAim").GetComponent<Image>();
         playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
         soundCheer = GameObject.Find("Sound/cheer").GetComponent<AudioSource>();
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
@@ -240,17 +245,30 @@ public class Game : MonoBehaviour
         goalTextColorAlpha = 1;
         soundCheer.Play();
         textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
-        playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer);
+        playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer, 0 , true);
 
         delayScoreGoal = DELAY_SCOREGOAL;
     }
 
     public void KickOff()
     {
+        Debug.Log("Kickoff");
         ResetPlayersAndBall();
         ActiveHumanPlayer.MovementDisabled = true;
         nextGameState = GameState_.BringingBallIn;
         SetGameState(GameState_.WaitingForWhistle);
+    }
+
+    public void TerminateAllRunningActions()
+    {
+        Debug.Log("TerminateAllRunningActions");
+        foreach (Team team in teams)
+        {
+            foreach (Player player in team.Players)
+            {
+                player.PlayerAction.TerminateRunningAction();
+            }
+        }
     }
 
     public void SetGameState(GameState_ newGameState)
@@ -261,13 +279,28 @@ public class Game : MonoBehaviour
         switch (newGameState)
         {
             case GameState_.WaitingForWhistle:
+                TerminateAllRunningActions();
+                if (NextGameState==GameState_.Penalty)
+                {
+                    if (playerTakingPenalty.Team.Number == 1)
+                    {
+                        ((AIFieldPlayer)playerTakingPenalty).PrepareForPenalty();
+                    }
+                }
                 break;
             case GameState_.Cheering:
                 ActiveHumanPlayer.MovementDisabled = true;
                 break;
             case GameState_.Replay:
+                playerLastTouchedBall.PlayerAction.TerminateRunningAction();        // Stop cheering
                 ActiveHumanPlayer.MovementDisabled = false;
                 recorder.PlayBack(goalOfTeamLastScored);
+                break;
+            case GameState_.Penalty:
+                if (playerTakingPenalty.Team.Number==1)
+                {
+                    ((AIFieldPlayer)playerTakingPenalty).TakePenalty();
+                }
                 break;
         }
     }
@@ -335,7 +368,7 @@ public class Game : MonoBehaviour
     public void RemovePowerBar()
     {
         powerBar.SetActive(false);
-        crosshairAim.enabled = false;
+//        crosshairAim.enabled = false;
     }
 
     // Move players that are too close in the direction of the center of the field
@@ -365,6 +398,7 @@ public class Game : MonoBehaviour
         PassDestinationPlayer = null;
         if (playerWithBall != null)
         {
+            GoalKeeperCameraTeam0.enabled = false;
             if (player is HumanPlayer && !((HumanPlayer)player).PlayerInput.enabled)
             {
                 playerFollowCamera.Follow = player.PlayerCameraRoot;
@@ -373,6 +407,7 @@ public class Game : MonoBehaviour
                 activeHumanPlayer.PlayerInput.enabled = true;
             }
             scriptBall.PutOnGround();
+            Debug.Log("has ball :" + player.name);
             player.HasBall = true;
             playerLastTouchedBall = playerWithBall;
             teamLastTouched = teamWithBall = playerWithBall.Team.Number;
@@ -387,12 +422,14 @@ public class Game : MonoBehaviour
 
     public Player GetPlayerToThrowIn()
     {
-        return FieldPlayerClosestToBall(OtherTeam(teamLastTouched));
+        return FieldPlayerClosestToBall(0);
+        //return FieldPlayerClosestToBall(OtherTeam(teamLastTouched));
     }
 
     public Player GetPlayerToGoalKick()
     {
-        return teams[OtherTeam(teamLastTouched)].GoalKeeper;
+        return teams[0].GoalKeeper;
+        //return teams[OtherTeam(teamLastTouched)].GoalKeeper;
     }
 
     public Player FindNextFieldPLayer(Player player)

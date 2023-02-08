@@ -10,7 +10,13 @@ public enum ActionType_
     Shot,
     Cheer,
     Tackle,
-    Fall
+    Fall,
+    GoalKeeperDiveLeft,
+    GoalKeeperDiveRight,
+    GoalKeeperBlockLeft,
+    GoalKeeperBlockRight,
+    GoalKeeperJump,
+    GoalKeeperCatch,
 }
 
 public class PlayerAction
@@ -20,6 +26,10 @@ public class PlayerAction
     public const float ANIMATION_DURATION_CHEERING = 4.0f;
     public const float ANIMATION_DURATION_TACKLE = 0.5f;
     public const float ANIMATION_DURATION_FALL = 1.7f;
+    public const float ANIMATION_DURATION_DIVE = 1.0f;
+    public const float ANIMATION_DURATION_BLOCK = 1.0f;
+    public const float ANIMATION_DURATION_CATCH = 1.7f;
+    public const float ANIMATION_DURATION_JUMP = 1.7f;
 
     public const float DELAY_KICK = 0.0f;
     public const float DELAY_THROW = 0.1f;
@@ -87,18 +97,37 @@ public class PlayerAction
         playerAnimation = null;
         switch (actionType)
         {
+            case ActionType_.Cheer:
+                Debug.Log("End Cheer");
+                break;
             case ActionType_.Tackle:
                 player.MovementDisabled = false;
                 break;
             case ActionType_.Fall:
                 player.MovementDisabled = false;
                 break;
+            case ActionType_.Shot:
+            case ActionType_.Pass:
+                if (player is HumanGoalkeeper)      // goalkick
+                {
+                    player.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
+                    ((HumanPlayer)player).ActivateNextFieldPlayer();
+                }
+                break;
+            case ActionType_.GoalKeeperDiveLeft:                
+            case ActionType_.GoalKeeperDiveRight:
+            case ActionType_.GoalKeeperBlockLeft:
+            case ActionType_.GoalKeeperBlockRight:
+            case ActionType_.GoalKeeperJump:
+            case ActionType_.GoalKeeperCatch:
+                player.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
+                break;
         }
     }
 
     public void StartAction(ActionType_ actionType, float power)
     {
-        //Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
+        Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
         this.actionType = actionType;
         this.power = power;
         excuted = false;
@@ -131,6 +160,7 @@ public class PlayerAction
                 break;
 
             case ActionType_.Cheer:
+                Debug.Log("Cheer");
                 durationActionDelay = ANIMATION_DURATION_CHEERING;
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_CHEERING, false, false, PlayerAnimation.LAYER_CHEER, "Cheer");
                 break;
@@ -144,6 +174,43 @@ public class PlayerAction
             case ActionType_.Fall:
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_FALL, true, true, PlayerAnimation.LAYER_FALL, "Fall", 0.4f);
                 break;
+
+            case ActionType_.GoalKeeperDiveLeft:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_DIVE, false, false, PlayerAnimation.LAYER_DIVE_LEFT, "DiveLeft");
+                break;
+
+            case ActionType_.GoalKeeperDiveRight:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_DIVE, false, false, PlayerAnimation.LAYER_DIVE_RIGHT, "DiveRight");
+                break;
+
+            case ActionType_.GoalKeeperBlockLeft:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_BLOCK, false, false, PlayerAnimation.LAYER_BLOCK_LEFT, "BlockLeft");
+                break;
+
+            case ActionType_.GoalKeeperBlockRight:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_BLOCK, false, false, PlayerAnimation.LAYER_BLOCK_RIGHT, "BlockRight");
+                break;
+
+            case ActionType_.GoalKeeperJump:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_JUMP, false, false, PlayerAnimation.LAYER_JUMP, "Jump");
+                break;
+
+            case ActionType_.GoalKeeperCatch:
+                playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_CATCH, false, false, PlayerAnimation.LAYER_CATCH, "Catch");
+                break;
+        }
+    }
+
+    public void TerminateRunningAction()
+    {
+        if (running)
+        {
+            running = false;
+            if (playerAnimation != null)
+            {
+                animator.SetLayerWeight(playerAnimation.Layer, 0);
+            }
+            OnActionFinished();
         }
     }
 
@@ -209,9 +276,74 @@ public class PlayerAction
         {
             ExecuteAction();
         }
-        if (running && (actionType.Equals(ActionType_.ThrowinShot) || actionType.Equals(ActionType_.ThrowinPass)))
+
+        switch (actionType)
         {
-            player.TransformBall.position = player.BallHandPosition.position;
+            case ActionType_.ThrowinShot:
+            case ActionType_.ThrowinPass:
+                if (!excuted)
+                {
+                    // ball follow hand as long as throw in has not been performed
+                    player.TransformBall.position = player.BallHandPosition.position;
+                }
+                break;
+            case ActionType_.GoalKeeperDiveLeft:
+                if (Time.time - timeStarted < 0.4f)
+                {
+                    player.transform.Translate(new Vector3(0, 0, -8f) * Time.deltaTime, Space.World);
+                }
+                if (Time.time - timeStarted < 0.25f)
+                {
+                    player.transform.Translate(new Vector3(0, 6, 0f) * Time.deltaTime, Space.World);
+                }
+                else if (player.transform.position.y > Game.PLAYER_Y_POSITION)
+                {
+                    player.transform.Translate(new Vector3(0, -6, 0) * Time.deltaTime, Space.World);
+                }
+                break;
+
+            case ActionType_.GoalKeeperDiveRight:
+                if (Time.time - timeStarted < 0.4f)
+                {
+                    player.transform.Translate(new Vector3(0, 0, 8f) * Time.deltaTime, Space.World);
+                }
+                if (Time.time - timeStarted < 0.25f)
+                {
+                    player.transform.Translate(new Vector3(0, 6, 0f) * Time.deltaTime, Space.World);
+                }
+                else if (player.transform.position.y > Game.PLAYER_Y_POSITION)
+                {
+                    player.transform.Translate(new Vector3(0, -6, 0) * Time.deltaTime, Space.World);
+                }
+                break;
+
+            case ActionType_.GoalKeeperBlockLeft:
+                if (Time.time - timeStarted < 0.25f)
+                {
+                    player.transform.Translate(new Vector3(0, 0, -8f) * Time.deltaTime, Space.World);
+                }
+                break;
+
+            case ActionType_.GoalKeeperBlockRight:
+                if (Time.time - timeStarted < 0.25f)
+                {
+                    player.transform.Translate(new Vector3(0, 0, 8f) * Time.deltaTime, Space.World);
+                }
+                break;
+
+            case ActionType_.GoalKeeperJump:
+                if (Time.time - timeStarted < 0.2f)
+                {
+                    player.transform.Translate(new Vector3(0, 6, 0) * Time.deltaTime, Space.World);
+                }
+                else if(player.transform.position.y > Game.PLAYER_Y_POSITION)
+                {
+                    player.transform.Translate(new Vector3(0, -6, 0) * Time.deltaTime, Space.World);
+                }
+                break;
+
+            case ActionType_.GoalKeeperCatch:
+                break;
         }
     }
 }

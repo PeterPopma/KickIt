@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 823483794410744909}
   - component: {fileID: 10778003509671677}
-  - component: {fileID: 10778003509671676}
   - component: {fileID: 8900318437049987988}
   - component: {fileID: 10778003509671675}
   - component: {fileID: 4361760040554736267}
@@ -66,37 +65,6 @@ CharacterController:
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.93, z: 0}
---- !u!114 &10778003509671676
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 10778003509671671}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edd93036b73e81241874ccefcebf2ac9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MoveSpeed: 8
-  SprintSpeed: 15
-  RotationSmoothTime: 0.08
-  SpeedChangeRate: 100
-  JumpHeight: 1.2
-  Gravity: -15
-  JumpTimeout: 0.3
-  FallTimeout: 0.15
-  Grounded: 1
-  GroundedOffset: -0.14
-  GroundedRadius: 0.28
-  GroundLayers:
-    serializedVersion: 2
-    m_Bits: 1
-  CinemachineCameraTarget: {fileID: 5679129000922910636}
-  TopClamp: 70
-  BottomClamp: -30
-  CameraAngleOverride: 0
-  LockCameraPosition: 0
 --- !u!114 &8900318437049987988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,6 +84,9 @@ MonoBehaviour:
   shoot: 0
   pass: 0
   changeQuality: 0
+  test: 0
+  diveLeft: 0
+  diveRight: 0
   analogMovement: 0
   cursorLocked: 1
   cursorInputForLook: 1
@@ -147,7 +118,7 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 10778003509671676}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: InputMove
         m_Mode: 0
@@ -163,7 +134,7 @@ MonoBehaviour:
     m_ActionName: Player/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow,/XInputControllerWindows/leftStick]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 10778003509671676}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: InputLook
         m_Mode: 0
@@ -179,7 +150,7 @@ MonoBehaviour:
     m_ActionName: Player/Look[/Mouse/delta,/XInputControllerWindows/rightStick]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 10778003509671676}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: InputJump
         m_Mode: 0
@@ -195,7 +166,7 @@ MonoBehaviour:
     m_ActionName: Player/Jump[/Keyboard/space,/XInputControllerWindows/buttonSouth]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 10778003509671676}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: InputSprint
         m_Mode: 0
@@ -473,13 +444,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
         type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: 12e52e465ed793a4d801955e9f964a82, type: 3}
+    - target: {fileID: 5866666021909216657, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
+        type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
+      objectReference: {fileID: 9100000, guid: 0c9bd8bc556874a4cae7d6e4a344ba67, type: 2}
     - target: {fileID: 5866666021909216657, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
         type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7311561063055367063, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
+        type: 3}
+      propertyPath: m_Name
+      value: mixamorig5:Hips
       objectReference: {fileID: 0}
     - target: {fileID: 7537171909299771662, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
         type: 3}
@@ -498,8 +479,38 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 7976212776661745073}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1753296435996915983}
   m_SourcePrefab: {fileID: 100100000, guid: 5f6f84d5cc0b8b74d92523f390d0c602, type: 3}
+--- !u!1 &7039801706640714976 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f6f84d5cc0b8b74d92523f390d0c602,
+    type: 3}
+  m_PrefabInstance: {fileID: 7886664463901725105}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1753296435996915983
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7039801706640714976}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 5f6f84d5cc0b8b74d92523f390d0c602, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0c9bd8bc556874a4cae7d6e4a344ba67, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
 --- !u!4 &7171398306077118250 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8145072973764649317, guid: 5f6f84d5cc0b8b74d92523f390d0c602,

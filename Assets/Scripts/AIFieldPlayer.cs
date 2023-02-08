@@ -28,7 +28,6 @@ public class AIFieldPlayer : AIPlayer
     {
         base.Update();
 
-        return;
         if (Game.Instance.GameState != GameState_.Playing)
         {
             return;
@@ -118,5 +117,31 @@ public class AIFieldPlayer : AIPlayer
         Vector3 moveSpeed = new Vector3(movedirection.normalized.x * movementSpeed * Time.deltaTime, 0, movedirection.normalized.z * movementSpeed * Time.deltaTime);
         transform.position += moveSpeed;
         animator.SetFloat("Speed", movementSpeed * 2);
+    }
+
+    public void PrepareForPenalty()
+    {
+        Debug.Log("prepare for penalty");
+        animator.SetFloat("Speed", 0);
+        transform.position = new Vector3(41.0040016f, 0.5f, -0.0216503143f);
+        transform.LookAt(Game.Instance.Goals[0]);
+        ScriptBall.transform.position = PlayerBallPosition.position;
+        CheckTakeBall();
+        if (!HasBall)
+        {
+            Debug.Log("Expect to have ball!  ball pos.:" + ScriptBall.transform.position + " player pos.:" + Game.Instance.Teams[1].Players[0].transform.position);
+        }
+        ((HumanPlayer)Game.Instance.Teams[0].GoalKeeper).Activate();
+        Game.Instance.GoalKeeperCameraTeam0.enabled = true;
+        Game.Instance.Teams[0].GoalKeeper.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
+    }
+
+
+    public void TakePenalty()
+    {
+        float yRotation = Random.value * 35f + 70f;
+        Debug.Log("take penalty at direction: " + yRotation);
+        Game.Instance.Teams[1].Players[0].transform.rotation = Quaternion.Euler(0, yRotation, 0);
+//        Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, (Random.value * 0.5f) + 0.6f);
     }
 }

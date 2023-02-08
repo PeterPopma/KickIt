@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class HumanFieldPlayer : HumanPlayer
 {
+    private ThirdPersonController scriptThirdPersonController;
+    public ThirdPersonController ScriptThirdPersonController { get => scriptThirdPersonController; set => scriptThirdPersonController = value; }
+    
     new void Awake()
     {
         base.Awake();
+
+        scriptThirdPersonController = GetComponent<ThirdPersonController>();
     }
 
     new void Start()
@@ -17,17 +22,6 @@ public class HumanFieldPlayer : HumanPlayer
     new void Update()
     {
         base.Update();
-
-        if (inputSystem.test)
-        {
-            inputSystem.test = false;
-            Game.Instance.Teams[1].Players[0].transform.position = new Vector3(16.2700005f, 0.5f, 0.100000001f);
-            Game.Instance.Teams[1].Players[0].LookAt(Game.Instance.Goals[0]);
-            ScriptBall.transform.position = Game.Instance.Teams[1].Players[0].PlayerBallPosition.position;
-            Game.Instance.Teams[1].Players[0].CheckTakeBall();
-            Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, 1f);
-            Game.Instance.SetPlayerWithBall(Game.Instance.Teams[1].Players[0]);
-        }
 
         if (DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)
         {

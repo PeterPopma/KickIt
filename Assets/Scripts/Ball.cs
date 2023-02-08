@@ -4,11 +4,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum OutOfFieldEvent_
+{
+    ThrowIn,
+    GoalKick,
+    Corner
+}
+
 public class Ball : MonoBehaviour
 {
     private float ballOutOfFieldTimeOut;
     private float delayCheckOutOfField;
-    private bool isThrowIn;
+    private OutOfFieldEvent_ outOfFieldEvent;
     private Vector3 speed;
     private Vector3 ballOutOfFieldposition;
     private Vector3 previousPosition;
@@ -49,6 +56,7 @@ public class Ball : MonoBehaviour
         if (Game.Instance.PlayerWithBall != null)
         {
             Game.Instance.PlayerWithBall.HasBall = false;
+            Debug.Log("loose ball :" + Game.Instance.PlayerWithBall.name);
             Game.Instance.SetPlayerWithBall(null);
         }
         transform.position = ballOutOfFieldposition;
@@ -56,7 +64,7 @@ public class Ball : MonoBehaviour
         rigidbody.angularVelocity = Vector3.zero;
         Player player;
 
-        if (isThrowIn)
+        if (outOfFieldEvent == OutOfFieldEvent_.ThrowIn)
         {
             player = Game.Instance.GetPlayerToThrowIn();
             player.Animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
@@ -65,11 +73,15 @@ public class Ball : MonoBehaviour
             rigidbody.isKinematic = true;
             transform.position = player.BallHandPosition.position;
         }
-        else
+        else if (outOfFieldEvent == OutOfFieldEvent_.GoalKick)
         {
             player = Game.Instance.GetPlayerToGoalKick();
             player.DoingKick = true;
             transform.position = player.PlayerBallPosition.position;
+        }
+        else
+        {
+            player = Game.Instance.GetPlayerToThrowIn();
         }
         transform.parent = player.transform;
         player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
@@ -90,33 +102,30 @@ public class Ball : MonoBehaviour
         if (transform.position.z < Game.FIELD_BOUNDARY_LOWER_Z)
         {
             isOutOfField = true;
-            isThrowIn = true;
+            outOfFieldEvent = OutOfFieldEvent_.ThrowIn;
             ballOutOfFieldTimeOut = 1.0f;
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, -25);
-            soundWhistle.Play();
         }
         if (transform.position.z > Game.FIELD_BOUNDARY_UPPER_Z)
         {
             isOutOfField = true;
-            isThrowIn = true;
+            outOfFieldEvent = OutOfFieldEvent_.ThrowIn;
             ballOutOfFieldTimeOut = 1.0f;
             ballOutOfFieldposition = new Vector3(transform.position.x, BALL_GROUND_POSITION_Y, 25);
-            soundWhistle.Play();
         }
 
         if (transform.position.x < Game.FIELD_BOUNDARY_LOWER_X)
         {
             isOutOfField = true;
-            isThrowIn = false;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched == 0)
             {
-                // goal kick
+                outOfFieldEvent = OutOfFieldEvent_.GoalKick;
                 ballOutOfFieldposition = new Vector3(-46.8f, BALL_GROUND_POSITION_Y, -4.89f);
             }
             else
             {
-                // corner
+                outOfFieldEvent = OutOfFieldEvent_.Corner;
                 if (transform.position.z > 0)
                 {
                     ballOutOfFieldposition = new Vector3(-52.6f, BALL_GROUND_POSITION_Y, 25);
@@ -126,21 +135,20 @@ public class Ball : MonoBehaviour
                     ballOutOfFieldposition = new Vector3(-52.6f, BALL_GROUND_POSITION_Y, -25);
                 }
             }
-            soundWhistle.Play();
         }
+
         if (transform.position.x > Game.FIELD_BOUNDARY_UPPER_X)
         {
             isOutOfField = true;
-            isThrowIn = false;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched == 1)
             {
-                // goal kick
+                outOfFieldEvent = OutOfFieldEvent_.GoalKick;
                 ballOutOfFieldposition = new Vector3(46.58f, BALL_GROUND_POSITION_Y, 5.29f);
             }
             else
             {
-                // corner
+                outOfFieldEvent = OutOfFieldEvent_.Corner;
                 if (transform.position.z > 0)
                 {
                     ballOutOfFieldposition = new Vector3(52.3f, BALL_GROUND_POSITION_Y, 25);
@@ -150,6 +158,11 @@ public class Ball : MonoBehaviour
                     ballOutOfFieldposition = new Vector3(52.3f, BALL_GROUND_POSITION_Y, -25);
                 }
             }
+        }
+
+        if (isOutOfField)
+        {
+            Debug.Log("out of field: " + transform.position);
             soundWhistle.Play();
         }
     }
@@ -162,10 +175,10 @@ public class Ball : MonoBehaviour
             return;
         }
 
-        if (ballOutOfFieldTimeOut>0)
+        if (ballOutOfFieldTimeOut > 0)
         {
             ballOutOfFieldTimeOut -= Time.deltaTime;
-            if (ballOutOfFieldTimeOut <=0)
+            if (ballOutOfFieldTimeOut <= 0)
             {
                 TakeThrowInOrGoalKick();
                 return;
@@ -175,7 +188,7 @@ public class Ball : MonoBehaviour
         {
             delayCheckOutOfField -= Time.deltaTime;
         }
-        else
+        else if (!isOutOfField)
         {
             CheckBallOutOfField();
         }
@@ -194,6 +207,7 @@ public class Ball : MonoBehaviour
         if (transform.position.x > 15 && speed.x > 10 && Game.Instance.TeamLastTouched == 1)
         {
             Game.Instance.GoalKeeperCameraTeam0.enabled = true;
+            ((HumanPlayer)Game.Instance.Teams[0].GoalKeeper).Activate();
         }
     }
 

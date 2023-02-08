@@ -47,6 +47,7 @@ public class Player : MonoBehaviour
     public bool MovementDisabled { get => movementDisabled; set => movementDisabled = value; }
     public AudioSource SoundSlide { get => soundSlide; set => soundSlide = value; }
     public Player NextPlayer { get => nextPlayer; set => nextPlayer = value; }
+    public PlayerAction PlayerAction { get => playerAction; set => playerAction = value; }
 
     protected void Awake()
     {
@@ -80,24 +81,29 @@ public class Player : MonoBehaviour
             UpdateGame();
         }
 
-        if (doingKick)
+        if (Game.Instance.GameState.Equals(GameState_.BringingBallIn) || Game.Instance.GameState.Equals(GameState_.WaitingForWhistle))
         {
-            if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
+            if (doingKick)
             {
-                // Player did not respond, so execute kick in for him
-                SetPlayerAction(ActionType_.Shot, 0.2f);
+                if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
+                {
+                    Debug.Log("timeout kick");
+                    // Player did not respond, so execute kick in for him
+                    SetPlayerAction(ActionType_.Shot, 0.2f);
+                }
             }
-        }
 
-        if (doingThrow)
-        {
-            animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
-            animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
-            scriptBall.transform.position = BallHandPosition.position;
-            if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
+            if (doingThrow)
             {
-                // Player did not respond, so execute throw in for him
-                SetPlayerAction(ActionType_.ThrowinShot, 0.2f);
+                animator.Play("ThrowIn", PlayerAnimation.LAYER_THROW_IN, 0.4f);
+                animator.SetLayerWeight(PlayerAnimation.LAYER_THROW_IN, 1);
+                scriptBall.transform.position = BallHandPosition.position;
+                if (Time.time - timePlayerActionRequested > MAX_ACTION_DURATION && !playerAction.Running)
+                {
+                    Debug.Log("timeout throw");
+                    // Player did not respond, so execute throw in for him
+                    SetPlayerAction(ActionType_.ThrowinShot, 0.2f);
+                }
             }
         }
     }
@@ -135,6 +141,8 @@ public class Player : MonoBehaviour
         float distanceToBall = Vector3.Distance(transformBall.position, PlayerBallPosition.position);
         if (distanceToBall < 0.6)
         {
+            Debug.Log("player taking ball: " + name);
+            Debug.Log("reset kinematic");
             // this makes the ball stop rotating from physics.
             scriptBall.GetComponent<Rigidbody>().isKinematic = true;
             scriptBall.GetComponent<Rigidbody>().isKinematic = false;
@@ -180,21 +188,24 @@ public class Player : MonoBehaviour
 
     public void LooseBall()
     {
+        takeBallDelay = 2.0f;
+        Debug.Log("loose ball :" + name);
         HasBall = false;
         Game.Instance.RemovePowerBar();
     }
 
 
-    public void SetPlayerAction(ActionType_ actionType, float power = 0)
+    public void SetPlayerAction(ActionType_ actionType, float power = 0, bool replaceRunningAction = false)
     {
         // Any running action must be finished before you can order a new action
-        if (!playerAction.Running)
+        if (!playerAction.Running || replaceRunningAction)
         {
             playerAction.StartAction(actionType, power);
         }
         else
         {
-            Debug.Log("action still running! animation layer weight: " + animator.GetLayerWeight(playerAction.PlayerAnimation.Layer));
+            Debug.Log("action " + playerAction.ActionType.ToString() + " still running! animation layer weight: " +
+                animator.GetLayerWeight(playerAction.PlayerAnimation.Layer) + " new action: " + actionType.ToString());
         }
     }
 
@@ -203,12 +214,12 @@ public class Player : MonoBehaviour
         soundShoot.Play();
         takeBallDelay = 0.2f;
         Game.Instance.SetPlayerWithBall(null);
+        LooseBall();
         Vector3 shootdirection = transform.forward;
         shootdirection.y += 0.3f;
         Debug.DrawLine(transform.position, transform.position + shootdirection * 10f, Color.white, 2.5f);
+        Debug.Log("shoot player " + name);
         rigidbodyBall.AddForce(shootdirection * (5 + shootingPower * 25f), ForceMode.VelocityChange);
-        //       rigidbodyBall.AddForce(new Vector3(0,0.3f,0)*20f, ForceMode.VelocityChange);
-        LooseBall();
     }
 
     public void TakePass()

@@ -19,5 +19,20 @@ public class AIPlayer : Player
     protected new void Update()
     {
         base.Update();
+
+        if (Game.Instance.GameState == GameState_.BringingBallIn)
+        {
+            if (HasBall)
+            {
+                if (DoingKick)
+                {
+                    SetPlayerAction(ActionType_.Pass);
+                }
+                if (DoingThrow)
+                {
+                    SetPlayerAction(ActionType_.ThrowinPass);
+                }
+            }
+        }
     }
 }

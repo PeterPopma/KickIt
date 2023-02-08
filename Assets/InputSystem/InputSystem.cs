@@ -12,6 +12,8 @@ public class InputSystem : MonoBehaviour
 	public bool pass;
 	public bool changeQuality;
 	public bool test;
+	public bool diveLeft;
+	public bool diveRight;
 
 	[Header("Movement Settings")]
 	public bool analogMovement;
@@ -65,7 +67,15 @@ public class InputSystem : MonoBehaviour
 		TestInput(value.isPressed);
 	}
 
+	public void OnDiveRight(InputValue value)
+	{
+		DiveRightInput(value.isPressed);
+	}
 
+	public void OnDiveLeft(InputValue value)
+	{
+		DiveLeftInput(value.isPressed);
+	}
 	public void MoveInput(Vector2 newMoveDirection)
 	{
 		move = newMoveDirection;
@@ -99,9 +109,19 @@ public class InputSystem : MonoBehaviour
 		pass = newPassState;
 	}
 
-	public void TestInput(bool newPassState)
+	public void TestInput(bool newTestState)
 	{
-		test = newPassState;
+		test = newTestState;
+	}
+
+	public void DiveLeftInput(bool newDiveLeftState)
+	{
+		diveLeft = newDiveLeftState;
+	}
+
+	public void DiveRightInput(bool newDiveRightState)
+	{
+		diveRight = newDiveRightState;
 	}
 
 #if !UNITY_IOS || !UNITY_ANDROID

@@ -9,6 +9,12 @@ public class PlayerAnimation
     public const int LAYER_THROW_IN = 3;
     public const int LAYER_TACKLE = 4;
     public const int LAYER_FALL = 5;
+    public const int LAYER_DIVE_LEFT = 2;
+    public const int LAYER_DIVE_RIGHT = 3;
+    public const int LAYER_BLOCK_LEFT = 4;
+    public const int LAYER_BLOCK_RIGHT = 5;
+    public const int LAYER_JUMP = 6;
+    public const int LAYER_CATCH = 7;
 
     private Animator animator;
     float duration;
