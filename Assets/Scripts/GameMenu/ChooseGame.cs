@@ -29,7 +29,7 @@ public class ChooseGame : MonoBehaviour
 
     public void OnGameModeButtonClick()
     {
-        GlobalParams.GameMode = selectedGameMode;
+        Settings.GameMode = selectedGameMode;
         GameObject.Find("CanvasChooseGame").GetComponent<Canvas>().enabled = false;
         if (selectedGameMode.Equals(GameMode_.PlayerVsPc))
         {

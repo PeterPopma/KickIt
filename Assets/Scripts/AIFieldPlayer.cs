@@ -7,7 +7,8 @@ public class AIFieldPlayer : AIPlayer
     [SerializeField] private float movementSpeed = 4.0f;
     private Vector3 targetGoalPosition;
     private Vector3 ownGoalPosition;
-    private Vector3[] attackTargetLocation = new Vector3[2];
+    private const float DELAY_AFTER_ACTION = 8.0f;
+    private float delayAfterAction;
 
     new void Awake()
     {
@@ -20,13 +21,23 @@ public class AIFieldPlayer : AIPlayer
 
         targetGoalPosition = new Vector3(51.93f, Game.PLAYER_Y_POSITION, 0.24f);
         ownGoalPosition = new Vector3(-52.37f, Game.PLAYER_Y_POSITION, -0.22f);
-        attackTargetLocation[0] = new Vector3(38f, Game.PLAYER_Y_POSITION, 10f);
-        attackTargetLocation[1] = new Vector3(38f, Game.PLAYER_Y_POSITION, -10f);
     }
 
     new void Update()
     {
         base.Update();
+
+        if (delayAfterAction > 0)
+        {
+            delayAfterAction -= Time.deltaTime;
+            return;
+        }
+
+        if (PlayerAction.Running && PlayerAction.ActionType.Equals(ActionType_.Fall))
+        {
+            // immobilyze player during fall
+            return;
+        }
 
         if (Game.Instance.GameState != GameState_.Playing)
         {
@@ -37,7 +48,7 @@ public class AIFieldPlayer : AIPlayer
         {
             Debug.Log("AI player does not belong to a team!");
         }
-        if (Game.Instance.TeamWithBall != team.Number)
+        if (Game.Instance.TeamWithBall != team)
         {
             DefendMode();
         }
@@ -52,23 +63,27 @@ public class AIFieldPlayer : AIPlayer
     {
         // move to target goal
         float speed = movementSpeed;
-        Vector3 movedirection = new Vector3(0.1f, 0, 0);
-        float distanceToGoal = 20;
-        //        Vector3 movedirection = attackTargetLocation[scriptPlayer.Number] - new Vector3(playerBallPosition.position.x, 0, playerBallPosition.position.z);
-        //float distanceToGoal = movedirection.magnitude;
+        Vector3 attackTargetLocation = new Vector3(38f, Game.PLAYER_Y_POSITION, transform.position.z<0 ? -10f : 10f);
+        Vector3 movedirection = attackTargetLocation - new Vector3(playerBallPosition.position.x, 0, playerBallPosition.position.z);
+        float distanceToGoal = movedirection.magnitude;
         if (HasBall)
         {
             speed *= Game.HAVING_BALL_SLOWDOWN_FACTOR;
         }
-        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * speed * Time.deltaTime, 0, movedirection.normalized.z * speed * Time.deltaTime);
-        transform.position += moveSpeed;
-        transform.LookAt(targetGoalPosition);
-        
+
+        if (distanceToGoal > 10)
+        {
+            Vector3 moveSpeed = new Vector3(movedirection.normalized.x * speed * Time.deltaTime, 0, movedirection.normalized.z * speed * Time.deltaTime);
+            transform.position += moveSpeed;
+            transform.LookAt(targetGoalPosition);
+        }
+
         // shoot
         if (HasBall && distanceToGoal < 15)
         {
             speed = 0;
-            SetPlayerAction(ActionType_.Shot, 0.7f);
+            SetPlayerAction(ActionType_.Shot, (Random.value * 0.4f) + 0.5f);
+            delayAfterAction = DELAY_AFTER_ACTION;
         }
 
         animator.SetFloat("Speed", speed * 2);
@@ -142,6 +157,6 @@ public class AIFieldPlayer : AIPlayer
         float yRotation = Random.value * 35f + 70f;
         Debug.Log("take penalty at direction: " + yRotation);
         Game.Instance.Teams[1].Players[0].transform.rotation = Quaternion.Euler(0, yRotation, 0);
-//        Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, (Random.value * 0.5f) + 0.6f);
+        Game.Instance.Teams[1].Players[0].SetPlayerAction(ActionType_.Shot, (Random.value * 0.5f) + 0.6f);
     }
 }

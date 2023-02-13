@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 10778003509671675}
   - component: {fileID: 4361760040554736267}
   - component: {fileID: 3964423867148387457}
+  - component: {fileID: 3812905649061623375}
   m_Layer: 3
   m_Name: pfGoalKeeperRed
   m_TagString: Player
@@ -219,6 +220,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballHandPosition: {fileID: 7976212776661745073}
+--- !u!114 &3812905649061623375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 10778003509671671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edd93036b73e81241874ccefcebf2ac9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoveSpeed: 2
+  SprintSpeed: 5.335
+  RotationSmoothTime: 0.12
+  SpeedChangeRate: 10
+  JumpHeight: 1.2
+  Gravity: -15
+  JumpTimeout: 0.5
+  FallTimeout: 0.15
+  Grounded: 1
+  GroundedOffset: -0.14
+  GroundedRadius: 0.28
+  GroundLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  CinemachineCameraTarget: {fileID: 5679129000922910636}
+  TopClamp: 70
+  BottomClamp: -30
+  CameraAngleOverride: 0
+  LockCameraPosition: 0
 --- !u!1 &587796908240827087
 GameObject:
   m_ObjectHideFlags: 0

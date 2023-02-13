@@ -19,10 +19,10 @@ public class InputName : MonoBehaviour
         string name = inputField.GetComponent<TextMeshProUGUI>().text;
         if (name != null && name.Length > 0)
         {
-            GlobalParams.PreferredPlayerName = name;
+            Settings.PreferredPlayerName = name;
         }
 
-        if (GlobalParams.GameMode.Equals(GameMode_.PlayerVsPlayer))
+        if (Settings.GameMode.Equals(GameMode_.PlayerVsPlayer))
         {
             textLoading.enabled = true;
             SceneManager.LoadSceneAsync("Game");

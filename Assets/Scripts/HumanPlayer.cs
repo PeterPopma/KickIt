@@ -12,7 +12,7 @@ public class HumanPlayer : Player
 
     protected InputSystem inputSystem;
     protected float shootingPower;
-    private CinemachineVirtualCamera playerFollowCamera;
+    protected CinemachineVirtualCamera playerFollowCamera;
     private PlayerInput playerInput;
 
 

@@ -86,11 +86,14 @@ public class ThirdPersonController : MonoBehaviour
 	private const float _threshold = 0.01f;
 
 	private bool _hasAnimator;
+	private bool isGoalKeeper;
+
 
 	private HumanPlayer scriptPlayer;
 
 	public float AnimationBlend { get => _animationBlend; set => _animationBlend = value; }
     public float InputMagnitude { get => inputMagnitude; set => inputMagnitude = value; }
+    public bool IsGoalKeeper { get => isGoalKeeper; set => isGoalKeeper = value; }
 
     private void Awake()
 	{
@@ -125,7 +128,7 @@ public class ThirdPersonController : MonoBehaviour
 
 	private void Update()
 	{
-		if (scriptPlayer.MovementDisabled)
+		if (scriptPlayer.MovementDisabled || isGoalKeeper)
         {
 			return;
         }

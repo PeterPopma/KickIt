@@ -56,9 +56,12 @@ public class Game : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
     [SerializeField] private TextMeshProUGUI textReplay;
+    [SerializeField] private Canvas canvasGame;
+    [SerializeField] private Canvas canvasGameOver;
     [SerializeField] private Transform[] goals;
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam0;
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam1;
+    [SerializeField] private GameTimer gameTimer;
     private GameMode_ gameMode;
     private GameState_ gameState;
     private GameState_ nextGameState;
@@ -73,9 +76,9 @@ public class Game : MonoBehaviour
     private HumanPlayer activeHumanPlayer;
     private Player passDestinationPlayer;
     private CinemachineVirtualCamera playerFollowCamera;
-    private int teamWithBall;
-    private int teamLastTouched;
-    private int teamKickOff;
+    private Team teamWithBall;
+    private Team teamLastTouched;
+    private Team teamKickOff;
     private float timeGameStateStarted;
     private float goalTextColorAlpha;
     private float delayScoreGoal;
@@ -86,8 +89,8 @@ public class Game : MonoBehaviour
 
     public Player PassDestinationPlayer { get => passDestinationPlayer; set => passDestinationPlayer = value; }
     public Player PlayerWithBall { get => playerWithBall; }
-    public int TeamWithBall { get => teamWithBall; set => teamWithBall = value; }
-    public int TeamLastTouched { get => teamLastTouched; set => teamLastTouched = value; }
+    public Team TeamWithBall { get => teamWithBall; set => teamWithBall = value; }
+    public Team TeamLastTouched { get => teamLastTouched; set => teamLastTouched = value; }
     public HumanPlayer ActiveHumanPlayer { get => activeHumanPlayer; set => activeHumanPlayer = value; }
     public List<Team> Teams { get => teams; set => teams = value; }
     public Vector3 KickOffPosition { get => kickOffPosition; set => kickOffPosition = value; }
@@ -154,21 +157,38 @@ public class Game : MonoBehaviour
         playerBlue2.GetComponent<AIPlayer>().NextPlayer = goalkeeperBlue.GetComponent<AIGoalkeeper>();
         goalkeeperBlue.GetComponent<AIGoalkeeper>().NextPlayer = playerBlue1.GetComponent<AIPlayer>();
 
+        teamKickOff = teams[0];
+
+        ResetMatchStats();
+    }
+
+    private void ResetMatchStats()
+    {
+        for (int team = 0; team < 2; team++)
+        {
+            Teams[team].Stats.BallPosession = 0;
+            Teams[team].Stats.BallOnHalf = 0;
+            Teams[team].Stats.Shots = 0;
+            Teams[team].Stats.ShotsOnGoal = 0;
+            Teams[team].Stats.Corners = 0;
+            Teams[team].Stats.Goals = new List<Goal>();
+        }
     }
 
     public void Awake()
     {
+        canvasGameOver.enabled = false;
         Instance = this;
         //crosshairAim = GameObject.Find("Canvas/CrosshairAim").GetComponent<Image>();
         playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
         soundCheer = GameObject.Find("Sound/cheer").GetComponent<AudioSource>();
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
         scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
-        sliderPowerBar = GameObject.Find("Canvas/Panel/PowerBar").GetComponent<Slider>();
-        powerBar = GameObject.Find("Canvas/Panel/PowerBar");
+        sliderPowerBar = GameObject.Find("CanvasGame/Panel/PowerBar").GetComponent<Slider>();
+        powerBar = GameObject.Find("CanvasGame/Panel/PowerBar");
         powerBar.SetActive(false);
 
-        if (GlobalParams.GameMode.Equals(GameMode_.PlayerVsPc))
+        if (Settings.GameMode.Equals(GameMode_.PlayerVsPc))
         {
             InitGamePlayerVsPC();
         }
@@ -185,14 +205,14 @@ public class Game : MonoBehaviour
             foreach(Player player in team.Players)
             {
                 player.SetPosition(player.InitialPosition);
-                player.LookAt(goals[OtherTeam(player.Team.Number)]);
+                player.LookAt(goals[OtherTeam(player.Team).Number]);
             }
         }
         // Set player to kick off
-        Vector3 position = new(0.5f - teamKickOff, KickOffPosition.y, kickOffPosition.z);
-        teams[teamKickOff].Players[0].SetPosition(position);
-        SetPlayerWithBall(teams[teamKickOff].Players[0]);
-        teams[teamKickOff].Players[0].DoingKick = true;
+        Vector3 position = new(0.5f - teamKickOff.Number, KickOffPosition.y, kickOffPosition.z);
+        teamKickOff.Players[0].SetPosition(position);
+        SetPlayerWithBall(teamKickOff.Players[0]);
+        teamKickOff.Players[0].DoingKick = true;
         scriptBall.BallOutOfFieldTimeOut = 0;
         scriptBall.PutOnCenterSpot();
         scriptBall.Rigidbody.velocity = Vector3.zero;
@@ -240,12 +260,14 @@ public class Game : MonoBehaviour
     {
         goalOfTeamLastScored = goalOfTeam;
         int teamScored = goalOfTeam==0 ? 1 : 0;
-        teams[teamScored].Score++;
-        teamKickOff = OtherTeam(teamScored);
+        teams[teamScored].Stats.Score++;
+        teamKickOff = Teams[goalOfTeam];
         goalTextColorAlpha = 1;
         soundCheer.Play();
-        textScore.text = "Score: " + teams[0].Score + "-" + teams[1].Score;
+        textScore.text = "Score: " + teams[0].Stats.Score + "-" + teams[1].Stats.Score;
         playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer, 0 , true);
+        playerLastTouchedBall.Team.Stats.ShotsOnGoal++;
+        playerLastTouchedBall.Team.Stats.Goals.Add(new Goal(playerLastTouchedBall.name, gameTimer.TimePassedAs90Minutes()));
 
         delayScoreGoal = DELAY_SCOREGOAL;
     }
@@ -302,6 +324,55 @@ public class Game : MonoBehaviour
                     ((AIFieldPlayer)playerTakingPenalty).TakePenalty();
                 }
                 break;
+            case GameState_.MatchOver:
+                DisplayMatchStats();
+                canvasGameOver.enabled = true;
+                break;
+        }
+    }
+
+    private void DisplayMatchStats()
+    {
+        GameObject.Find("CanvasGameOver/Panel/TextGoals0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.Score.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextGoals1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.Score.ToString());
+        float ballpossession = 100 * teams[0].Stats.BallPosession / (teams[0].Stats.BallPosession + teams[1].Stats.BallPosession);
+        GameObject.Find("CanvasGameOver/Panel/TextBallPosession0").GetComponent<TextMeshProUGUI>().SetText(ballpossession.ToString("0") + " %");
+        ballpossession = 100 * teams[1].Stats.BallPosession / (teams[0].Stats.BallPosession + teams[1].Stats.BallPosession);
+        GameObject.Find("CanvasGameOver/Panel/TextBallPosession1").GetComponent<TextMeshProUGUI>().SetText(ballpossession.ToString("0") + " %");
+        float ballOnHalf = 100 * teams[0].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
+        GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf0").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
+        ballOnHalf = 100 * teams[1].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
+        GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf1").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
+        GameObject.Find("CanvasGameOver/Panel/TextShots0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.Shots.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextShots1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.Shots.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextShotsOnGoal0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.ShotsOnGoal.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextShotsOnGoal1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.ShotsOnGoal.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextScorers0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.GoalsAsText());
+        GameObject.Find("CanvasGameOver/Panel/TextScorers1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.GoalsAsText());
+        GameObject.Find("CanvasGameOver/Panel/TextCorners0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.Corners.ToString());
+        GameObject.Find("CanvasGameOver/Panel/TextCorners1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.Corners.ToString());
+    }
+
+    public void FixedUpdate()
+    {
+        if (gameState == GameState_.Playing || gameState == GameState_.Penalty)
+        {
+            if (scriptBall.transform.position.x > 0)
+            {
+                teams[0].Stats.BallOnHalf++;
+            }
+            else
+            {
+                teams[1].Stats.BallOnHalf++;
+            }
+            if (PlayerWithBall != null && PlayerWithBall.Team.Number == 0)
+            {
+                teams[0].Stats.BallPosession++;
+            }
+            if (PlayerWithBall != null && PlayerWithBall.Team.Number == 1)
+            {
+                teams[1].Stats.BallPosession++;
+            }
         }
     }
 
@@ -346,15 +417,15 @@ public class Game : MonoBehaviour
 //        PerformSanityChecks();
     }
 
-    private int OtherTeam(int team)
+    private Team OtherTeam(Team team)
     {
-        if (team == 0)
+        if (team.Number == 0)
         {
-            return 1;
+            return teams[1];
         }
         else
         {
-            return 0;
+            return teams[1];
         }
     }
 
@@ -410,12 +481,12 @@ public class Game : MonoBehaviour
             Debug.Log("has ball :" + player.name);
             player.HasBall = true;
             playerLastTouchedBall = playerWithBall;
-            teamLastTouched = teamWithBall = playerWithBall.Team.Number;
+            teamLastTouched = teamWithBall = playerWithBall.Team;
             textPlayer.text = playerWithBall.name;
         }
         else
         {
-            teamWithBall = -1;
+            teamWithBall = null;
             textPlayer.text = "";
         }
     }

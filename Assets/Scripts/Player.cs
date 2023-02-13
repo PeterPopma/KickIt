@@ -48,6 +48,7 @@ public class Player : MonoBehaviour
     public AudioSource SoundSlide { get => soundSlide; set => soundSlide = value; }
     public Player NextPlayer { get => nextPlayer; set => nextPlayer = value; }
     public PlayerAction PlayerAction { get => playerAction; set => playerAction = value; }
+    public float TakeBallDelay { get => takeBallDelay; set => takeBallDelay = value; }
 
     protected void Awake()
     {
@@ -136,10 +137,10 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void CheckTakeBall()
+    public bool CheckTakeBall(float distance = 0.6f)
     {
         float distanceToBall = Vector3.Distance(transformBall.position, PlayerBallPosition.position);
-        if (distanceToBall < 0.6)
+        if (distanceToBall < distance)
         {
             Debug.Log("player taking ball: " + name);
             Debug.Log("reset kinematic");
@@ -150,10 +151,16 @@ public class Player : MonoBehaviour
             {
                 takeBallDelay = 2.0f;
                 soundSteal.Play();
-                Game.Instance.PlayerWithBall.LooseBall();
+                if (Game.Instance.PlayerWithBall != this)
+                {
+                    Game.Instance.PlayerWithBall.LooseBall();
+                }
             }
             Game.Instance.SetPlayerWithBall(this);
+            return true;
         }
+
+        return false;
     }
 
     public void TacklePlayers()
@@ -217,7 +224,23 @@ public class Player : MonoBehaviour
         LooseBall();
         Vector3 shootdirection = transform.forward;
         shootdirection.y += 0.3f;
-        Debug.DrawLine(transform.position, transform.position + shootdirection * 10f, Color.white, 2.5f);
+        //Debug.DrawLine(transform.position, transform.position + shootdirection * 10f, Color.white, 2.5f);
+        if (team.Number==0 && transform.position.x<-20)
+        {
+            if (shootdirection.x < 0)     // shooting in direction of opponent goal
+            {
+                team.Stats.Shots++;
+                Debug.Log("shots team 0 increased");
+            }
+        }
+        if (team.Number == 1 && transform.position.x > 20)
+        {
+            if (shootdirection.x > 0)     // shooting in direction of opponent goal
+            {
+                team.Stats.Shots++;
+                Debug.Log("shots team 1 increased");
+            }
+        }
         Debug.Log("shoot player " + name);
         rigidbodyBall.AddForce(shootdirection * (5 + shootingPower * 25f), ForceMode.VelocityChange);
     }

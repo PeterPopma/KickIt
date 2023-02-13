@@ -10,10 +10,10 @@ public class Star : MonoBehaviour, IPointerEnterHandler
     public void OnPointerEnter(PointerEventData eventData)
     {
         int level = gameObject.name[gameObject.name.Length - 1] - '0';
-        GlobalParams.ComputerLevel = level;
+        Settings.ComputerLevel = level;
         for (int star = 1; star < 6; star++)
         {
-            if (star <= GlobalParams.ComputerLevel)
+            if (star <= Settings.ComputerLevel)
             {
                 GameObject.Find("CanvasComputerStrength/Star" + star).GetComponent<Image>().color = Color.white;
             }

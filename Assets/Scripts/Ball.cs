@@ -81,7 +81,11 @@ public class Ball : MonoBehaviour
         }
         else
         {
+            // corner
             player = Game.Instance.GetPlayerToThrowIn();
+            player.Team.Stats.Corners++;
+            player.DoingKick = true;
+            transform.position = player.PlayerBallPosition.position;
         }
         transform.parent = player.transform;
         player.SetPosition(new Vector3(ballOutOfFieldposition.x, player.transform.position.y, ballOutOfFieldposition.z));
@@ -118,7 +122,7 @@ public class Ball : MonoBehaviour
         {
             isOutOfField = true;
             ballOutOfFieldTimeOut = 1.0f;
-            if (Game.Instance.TeamLastTouched == 0)
+            if (Game.Instance.TeamLastTouched.Number == 0)
             {
                 outOfFieldEvent = OutOfFieldEvent_.GoalKick;
                 ballOutOfFieldposition = new Vector3(-46.8f, BALL_GROUND_POSITION_Y, -4.89f);
@@ -141,7 +145,7 @@ public class Ball : MonoBehaviour
         {
             isOutOfField = true;
             ballOutOfFieldTimeOut = 1.0f;
-            if (Game.Instance.TeamLastTouched == 1)
+            if (Game.Instance.TeamLastTouched.Number == 1)
             {
                 outOfFieldEvent = OutOfFieldEvent_.GoalKick;
                 ballOutOfFieldposition = new Vector3(46.58f, BALL_GROUND_POSITION_Y, 5.29f);
@@ -204,7 +208,7 @@ public class Ball : MonoBehaviour
 
         //Debug.Log(speed.x);
 
-        if (transform.position.x > 15 && speed.x > 10 && Game.Instance.TeamLastTouched == 1)
+        if (transform.position.x > 15 && speed.x > 10 && Game.Instance.TeamLastTouched.Number == 1)
         {
             Game.Instance.GoalKeeperCameraTeam0.enabled = true;
             ((HumanPlayer)Game.Instance.Teams[0].GoalKeeper).Activate();
