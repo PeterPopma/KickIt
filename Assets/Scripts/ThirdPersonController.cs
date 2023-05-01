@@ -104,10 +104,6 @@ public class ThirdPersonController : MonoBehaviour
 		}
 
 		scriptPlayer = GetComponent<HumanPlayer>();
-	}
-
-	private void Start()
-	{
 		_animator = transform.Find("Geometry/Root").GetComponent<Animator>();
 		_hasAnimator = _animator != null;
 		//_hasAnimator = transform.Find("Geometry/Root").TryGetComponent(out _animator);
@@ -150,7 +146,6 @@ public class ThirdPersonController : MonoBehaviour
 		GroundedCheck();
 		Move();
 	}
-
 
 	private void LateUpdate()
 	{

@@ -92,13 +92,13 @@ public class PlayerAction
 
     private void OnActionFinished()
     {
-        //Debug.Log("finished animation: " + playerAnimation.Layer.ToString() + " time: " + Time.time);
+        Utilities.Log("finished animation: " + playerAnimation.Layer.ToString() + " time: " + Time.time, Utilities.DEBUG_TOPIC_PLAYERACTION);
         running = false;
         playerAnimation = null;
         switch (actionType)
         {
             case ActionType_.Cheer:
-                Debug.Log("End Cheer");
+                Utilities.Log("End Cheering", Utilities.DEBUG_TOPIC_MATCH_EVENTS);
                 break;
             case ActionType_.Tackle:
                 player.MovementDisabled = false;
@@ -111,7 +111,7 @@ public class PlayerAction
                 if (player is HumanGoalkeeper)      // goalkick
                 {
                     player.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
-                    ((HumanPlayer)player).ActivateNextFieldPlayer();
+                    Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
                 }
                 break;
             case ActionType_.GoalKeeperDiveLeft:                
@@ -127,7 +127,7 @@ public class PlayerAction
 
     public void StartAction(ActionType_ actionType, float power)
     {
-        Debug.Log("start action: " + actionType.ToString() + " time: " + Time.time);
+        Utilities.Log("start action: " + actionType.ToString() + " time: " + Time.time, Utilities.DEBUG_TOPIC_PLAYERACTION);
         this.actionType = actionType;
         this.power = power;
         excuted = false;
@@ -160,7 +160,7 @@ public class PlayerAction
                 break;
 
             case ActionType_.Cheer:
-                Debug.Log("Cheer");
+                Utilities.Log("Begin Cheering", Utilities.DEBUG_TOPIC_MATCH_EVENTS);
                 durationActionDelay = ANIMATION_DURATION_CHEERING;
                 playerAnimation = new PlayerAnimation(animator, ANIMATION_DURATION_CHEERING, false, false, PlayerAnimation.LAYER_CHEER, "Cheer");
                 break;
@@ -217,13 +217,13 @@ public class PlayerAction
     private void ExecuteAction()
     {
         excuted = true;
-        //Debug.Log("executed action: " + actionType.ToString() + " time: " + Time.time);
+        Utilities.Log("executed action: " + actionType.ToString() + " time: " + Time.time, Utilities.DEBUG_TOPIC_PLAYERACTION);
         player.TransformBall.parent = null;
 
         switch (actionType)
         {
             case ActionType_.Pass:
-                player.TakePass();
+                player.PassBallToPlayer();
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
@@ -235,7 +235,7 @@ public class PlayerAction
             case ActionType_.ThrowinPass:
                 player.ScriptBall.DelayCheckOutOfField = 0.5f;
                 player.ScriptBall.Rigidbody.isKinematic = false;
-                player.TakePass();
+                player.PassBallToPlayer();
                 Game.Instance.SetGameState(GameState_.Playing);
                 break;
 
@@ -253,10 +253,12 @@ public class PlayerAction
             case ActionType_.Tackle:
                 player.TacklePlayers();
                 player.MovementDisabled = true;
+                Utilities.Log("Movement disabled for player: " + player.name, Utilities.DEBUG_TOPIC_PLAYER_EVENTS);
                 break;
 
             case ActionType_.Fall:
                 player.MovementDisabled = true;
+                Utilities.Log("Movement enabled for player: " + player.name, Utilities.DEBUG_TOPIC_PLAYER_EVENTS);
                 break;
         }
     }

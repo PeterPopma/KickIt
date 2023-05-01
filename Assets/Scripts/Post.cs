@@ -6,12 +6,13 @@ public class Post : MonoBehaviour
 {
     private AudioSource soundHitPost;
 
-    private void Awake()
+    void Awake()
     {
         soundHitPost = GameObject.Find("Sound/hitpost").GetComponent<AudioSource>();
     }
 
-    public void OnCollisionEnter(Collision collision)
+    // Update is called once per frame
+    void OnCollisionEnter(Collision collision)
     {
         soundHitPost.Play();
     }

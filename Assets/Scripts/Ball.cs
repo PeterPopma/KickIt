@@ -15,6 +15,7 @@ public class Ball : MonoBehaviour
 {
     private float ballOutOfFieldTimeOut;
     private float delayCheckOutOfField;
+    private float timePassedBall;
     private OutOfFieldEvent_ outOfFieldEvent;
     private Vector3 speed;
     private Vector3 ballOutOfFieldposition;
@@ -24,6 +25,7 @@ public class Ball : MonoBehaviour
     private const float BALL_GROUND_POSITION_Y = 0.72f;
     private const float PASSING_SPEED = 25f;
     private bool isOutOfField;
+    private CinemachineVirtualCamera playerFollowCamera;
 
     public float BallOutOfFieldTimeOut { get => ballOutOfFieldTimeOut; set => ballOutOfFieldTimeOut = value; }
     public Rigidbody Rigidbody { get => rigidbody; set => rigidbody = value; }
@@ -31,12 +33,10 @@ public class Ball : MonoBehaviour
     public float DelayCheckOutOfField { get => delayCheckOutOfField; set => delayCheckOutOfField = value; }
     public bool IsOutOfField { get => isOutOfField; set => isOutOfField = value; }
 
-    private float timePassedBall;
-    private CinemachineVirtualCamera playerFollowCamera;
 
     private void Awake()
     {
-        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
+        playerFollowCamera = GameObject.Find("VCam_PlayerFollow").GetComponent<CinemachineVirtualCamera>();
 
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
         rigidbody = GetComponent<Rigidbody>();
@@ -56,7 +56,7 @@ public class Ball : MonoBehaviour
         if (Game.Instance.PlayerWithBall != null)
         {
             Game.Instance.PlayerWithBall.HasBall = false;
-            Debug.Log("loose ball :" + Game.Instance.PlayerWithBall.name);
+            Utilities.Log("loose ball :" + Game.Instance.PlayerWithBall.name, Utilities.DEBUG_TOPIC_PLAYER_EVENTS);
             Game.Instance.SetPlayerWithBall(null);
         }
         transform.position = ballOutOfFieldposition;
@@ -166,7 +166,7 @@ public class Ball : MonoBehaviour
 
         if (isOutOfField)
         {
-            Debug.Log("out of field: " + transform.position);
+            Utilities.Log("out of field: " + transform.position, Utilities.DEBUG_TOPIC_MATCH_EVENTS);
             soundWhistle.Play();
         }
     }
@@ -197,7 +197,7 @@ public class Ball : MonoBehaviour
             CheckBallOutOfField();
         }
 
-        if (Game.Instance.PassDestinationPlayer != null)
+        if (Game.Instance.PlayerReceivingPass != null)
         {
             UpdatePass();
         }
@@ -206,12 +206,10 @@ public class Ball : MonoBehaviour
             transform.position = Game.Instance.PlayerWithBall.PlayerBallPosition.position;
         }
 
-        //Debug.Log(speed.x);
-
         if (transform.position.x > 15 && speed.x > 10 && Game.Instance.TeamLastTouched.Number == 1)
         {
             Game.Instance.GoalKeeperCameraTeam0.enabled = true;
-            ((HumanPlayer)Game.Instance.Teams[0].GoalKeeper).Activate();
+            Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.Teams[0].GoalKeeper);
         }
     }
 
@@ -239,21 +237,21 @@ public class Ball : MonoBehaviour
     
     private void UpdatePass()
     {
-        if (Game.Instance.PassDestinationPlayer is HumanPlayer)
+        if (Game.Instance.PlayerReceivingPass is HumanPlayer)
         {
-            if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PassDestinationPlayer.PlayerCameraRoot)
+            if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PlayerReceivingPass.PlayerCameraRoot)
             {
-                // switch player
-                playerFollowCamera.Follow = Game.Instance.PassDestinationPlayer.PlayerCameraRoot;
+                // switch player camera a bit before the player receives the ball
+                playerFollowCamera.Follow = Game.Instance.PlayerReceivingPass.PlayerCameraRoot;
             }
         }
 
-        Vector3 movedirection = Game.Instance.PassDestinationPlayer.PlayerBallPosition.position - transform.position;
+        Vector3 movedirection = Game.Instance.PlayerReceivingPass.PlayerBallPosition.position - transform.position;
         if (movedirection.magnitude < 1f)
         {
             // pass arrived
-            transform.position = Game.Instance.PassDestinationPlayer.PlayerBallPosition.position;
-            Game.Instance.SetPlayerWithBall(Game.Instance.PassDestinationPlayer);
+            transform.position = Game.Instance.PlayerReceivingPass.PlayerBallPosition.position;
+            Game.Instance.SetPlayerWithBall(Game.Instance.PlayerReceivingPass);
         }
         movedirection.Normalize();
         transform.position += movedirection * PASSING_SPEED * Time.deltaTime;

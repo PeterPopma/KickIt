@@ -100,7 +100,7 @@ public class Recorder : MonoBehaviour
     {
         currentRecordingFrame = GetNextFrame(currentRecordingFrame);
 
-        for (int teamNumber = 0; teamNumber < numTeams; teamNumber++)
+        for (int teamNumber = 0; teamNumber < recordedTeams.Count; teamNumber++)
         {
             for (int playerNumber = 0; playerNumber < numPlayersPerTeam; playerNumber++)
             {
@@ -196,7 +196,7 @@ public class Recorder : MonoBehaviour
 
     public void EndReplay()
     {
-        Debug.Log("end replay");
+        Utilities.Log("end replay", Utilities.DEBUG_TOPIC_REPLAY);
         ResetAllAnimationLayers();
         //cameraReplayField[goalOfTeam].enabled = false;
         //cameraReplayGoal[goalOfTeam].enabled = false;
@@ -223,7 +223,7 @@ public class Recorder : MonoBehaviour
 
     public void PlayBack(int goalOfTeam)
     {
-        Debug.Log("begin replay");
+        Utilities.Log("begin replay", Utilities.DEBUG_TOPIC_REPLAY);
         this.goalOfTeam = goalOfTeam;
 
         framesPlayed = replaysPlayed = 0;

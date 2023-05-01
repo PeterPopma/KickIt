@@ -28,9 +28,16 @@ public class Stats
     public string GoalsAsText()
     {
         string goalText = "";
+        int numlines = 0;
         foreach (Goal goal in Goals)
         {
             goalText += goal.Time + " - " + goal.Name + "<br>";
+            numlines++;
+        }
+        while (numlines < 3)
+        {
+            numlines++;
+            goalText += ".<br>";
         }
 
         return goalText;

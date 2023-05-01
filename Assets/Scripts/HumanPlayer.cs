@@ -8,21 +8,16 @@ using UnityEngine.UI;
 
 public class HumanPlayer : Player
 {
-    public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
-
     protected InputSystem inputSystem;
     protected float shootingPower;
     protected CinemachineVirtualCamera playerFollowCamera;
-    private PlayerInput playerInput;
-
 
     protected new void Awake()
     {
         base.Awake();
 
-        playerFollowCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
+        playerFollowCamera = GameObject.Find("VCam_PlayerFollow").GetComponent<CinemachineVirtualCamera>();
         inputSystem = GetComponent<InputSystem>(); 
-        playerInput = GetComponent<PlayerInput>();
     }
     protected new void Start()
     {
@@ -43,6 +38,7 @@ public class HumanPlayer : Player
                 Game.Instance.PlayerTakingPenalty = Game.Instance.Teams[1].Players[0];
                 Game.Instance.NextGameState = GameState_.Penalty;
                 Game.Instance.SetGameState(GameState_.WaitingForWhistle);
+                ((HumanPlayer)Game.Instance.Teams[0].GoalKeeper).DoingKick = false;
             }
         }
 
@@ -54,11 +50,12 @@ public class HumanPlayer : Player
                 inputSystem.pass = false;
                 if (HasBall)
                 {
+
                     SetPlayerAction(ActionType_.Pass);
                 }
                 else
                 {
-                    ActivateNextFieldPlayer();
+                    Game.Instance.ActivateHumanPlayer(Game.Instance.NextHumanPlayer);
                 }
             }
 
@@ -100,19 +97,6 @@ public class HumanPlayer : Player
                 Game.Instance.Recorder.EndReplay();
             }
         }
-    }
-    public void Activate()
-    {
-        Game.Instance.ActiveHumanPlayer.PlayerInput.enabled = false;
-        Game.Instance.ActiveHumanPlayer = this;
-        playerInput.enabled = true;
-    }
-
-    public void ActivateNextFieldPlayer()
-    {
-        Player nextPlayer = Game.Instance.FindNextFieldPLayer(this);
-        ((HumanPlayer)nextPlayer).Activate();
-        playerFollowCamera.Follow = nextPlayer.PlayerCameraRoot;
     }
 
 }

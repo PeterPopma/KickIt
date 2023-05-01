@@ -1,11 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class HumanFieldPlayer : HumanPlayer
 {
     private ThirdPersonController scriptThirdPersonController;
     public ThirdPersonController ScriptThirdPersonController { get => scriptThirdPersonController; set => scriptThirdPersonController = value; }
+
+    public void OnJump(InputValue value)
+    {
+        int pp = 0;
+    }
+    public void OnShoot(InputValue value)
+    {
+        int pp = 0;
+    }
     
     new void Awake()
     {

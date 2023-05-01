@@ -2,7 +2,7 @@
     "name": "InputSystem",
     "maps": [
         {
-            "name": "Player",
+            "name": "Game",
             "id": "f62a4b92-ef5e-4175-8f4c-c9075429d32c",
             "actions": [
                 {
@@ -60,15 +60,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "ChangeQuality",
-                    "type": "Button",
-                    "id": "45c970e9-eb58-4533-81ac-7d85da67daf7",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Test",
                     "type": "Button",
                     "id": "73a3794d-53e4-4c79-8719-56cbebdd022b",
@@ -90,6 +81,51 @@
                     "name": "DiveRight",
                     "type": "Button",
                     "id": "c5bbd205-28ea-4b64-be5b-42c265101eb1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ViewThirdPerson",
+                    "type": "Button",
+                    "id": "31fe754d-b883-489a-b9e7-3f3708311ef2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ViewStadium",
+                    "type": "Button",
+                    "id": "9154e745-7cab-4947-9c5e-0857b1fd0274",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ChangeShirt",
+                    "type": "Button",
+                    "id": "67caeee2-6648-4229-a519-19dd5073b616",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ChangeQuality",
+                    "type": "Button",
+                    "id": "cb15664c-c88b-4ea6-a59a-07e61192a6df",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectNextPlayer",
+                    "type": "Button",
+                    "id": "e44961a4-3547-41cc-ab88-5da5dce78dfa",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -341,17 +377,6 @@
                 },
                 {
                     "name": "",
-                    "id": "d2876fe3-5952-4521-b41f-340b4e68fb7a",
-                    "path": "<Keyboard>/f1",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "ChangeQuality",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "bffa83c0-67d2-4f3e-bea2-6e3d993d5133",
                     "path": "<Keyboard>/t",
                     "interactions": "",
@@ -380,6 +405,61 @@
                     "processors": "",
                     "groups": "KeyboardMouse",
                     "action": "DiveRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "14560438-e5de-45eb-8248-3fda906f952f",
+                    "path": "<Keyboard>/f1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ViewThirdPerson",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0193ddfa-f015-429e-8052-389f917284a7",
+                    "path": "<Keyboard>/f2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ViewStadium",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b57684f1-3388-4c97-a31f-bd272b3751b4",
+                    "path": "<Keyboard>/f3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ChangeShirt",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2e4214cc-9716-4956-9cc8-bdd26ba242c1",
+                    "path": "<Keyboard>/f4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ChangeQuality",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2282fb37-237a-4c65-80de-71f5f0bf3c02",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectNextPlayer",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

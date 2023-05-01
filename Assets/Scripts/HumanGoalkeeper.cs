@@ -18,7 +18,7 @@ public class HumanGoalkeeper : HumanPlayer
     {
         base.Update();
 
-        if (PlayerInput.enabled == false)
+        if (Game.Instance.ActiveHumanPlayer != this)
         {
             // skip checks if goalkeeper is not active (for performance)
             return;
@@ -36,11 +36,18 @@ public class HumanGoalkeeper : HumanPlayer
         }
         else
         {
-            if (TakeBallDelay <= 0 && CheckTakeBall(1.2f))
+            if (TakeBallDelay <= 0 )
             {
-                Team.Stats.ShotsOnGoal++;
-                Debug.Log("Goalkeeper took ball");
-                playerFollowCamera.Follow = PlayerCameraRoot;
+                float distanceToBall = Vector3.Distance(transformBall.position, transform.position);
+                if (distanceToBall < 1.2f)
+                {
+                    Team.Stats.ShotsOnGoal++;
+                    if (ScriptBall.Speed.magnitude < 10)
+                    {
+                        TakeBall();
+                        playerFollowCamera.Follow = PlayerCameraRoot;
+                    }
+                }
             }
         }
 
