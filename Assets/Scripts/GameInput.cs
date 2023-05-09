@@ -18,18 +18,45 @@ public class GameInput : MonoBehaviour
     {
 		standStadiumCamera.SetActive(true);
 		scriptGame.StadiumCamera.enabled = false;
+		scriptGame.SetMessage("Changed to Player view");
 	}
 
 	private void OnViewStadium()
     {
 		standStadiumCamera.SetActive(false);
 		scriptGame.StadiumCamera.enabled = true;
-    }
+		scriptGame.SetMessage("Changed to Stadium view");
+	}
 
-    private void OnChangeShirt()
+	private void OnChangeShirt()
     {
         scriptGame.ChangeShirt();
-    }
+		scriptGame.SetMessage("Changed shirt colors");
+	}
+
+	private void OnFormation_343()
+	{
+		Formation.Set(scriptGame.Teams[0], Formation_._343);
+		scriptGame.SetMessage("Changed formation to 3-4-3");
+	}
+
+	private void OnFormation_433()
+	{
+		Formation.Set(scriptGame.Teams[0], Formation_._433);
+		scriptGame.SetMessage("Changed formation to 4-3-3");
+	}
+
+	private void OnFormation_442()
+	{
+		Formation.Set(scriptGame.Teams[0], Formation_._442);
+		scriptGame.SetMessage("Changed formation to 4-4-2");
+	}
+
+	private void OnFormation_532()
+	{
+		Formation.Set(scriptGame.Teams[0], Formation_._532);
+		scriptGame.SetMessage("Changed formation to 5-3-2");
+	}
 
 	public void OnMove(InputValue value)
 	{

@@ -24,6 +24,7 @@ public class AIPlayer : Player
         {
             if (HasBall)
             {
+                Game.Instance.AIPlayerDestination = (AIPlayer)Game.Instance.GetClosestPlayerOfSameTeam(this);
                 if (DoingKick)
                 {
                     SetPlayerAction(ActionType_.Pass);

@@ -9,10 +9,11 @@ public class Player : MonoBehaviour
     protected Team team;
     protected Animator animator;
 
-    int number;
+    public const float NORMAL_MOVEMENT_SPEED = 8f; 
     public const float MAX_ACTION_DURATION = 8.0f;
     [SerializeField] private Transform ballHandPosition;
-    private Ball scriptBall;
+    private int number;
+    protected Ball scriptBall;
     private Rigidbody rigidbodyBall;
     protected Transform transformBall;
     protected Transform playerBallPosition;
@@ -30,6 +31,7 @@ public class Player : MonoBehaviour
     private bool doingThrow;
     private bool doingKick;
     private bool movementDisabled;
+    private Vector2 spawnPosition;
 
     public bool HasBall { get => hasBall; set => hasBall = value; }
     public Transform PlayerBallPosition { get => playerBallPosition; set => playerBallPosition = value; }
@@ -47,6 +49,8 @@ public class Player : MonoBehaviour
     public PlayerAction PlayerAction { get => playerAction; set => playerAction = value; }
     public float TakeBallDelay { get => takeBallDelay; set => takeBallDelay = value; }
     public int Number { get => number; set => number = value; }
+    public Vector2 SpawnPosition { get => spawnPosition; set => spawnPosition = value; }
+
 
     protected void Awake()
     {
@@ -244,15 +248,19 @@ public class Player : MonoBehaviour
         rigidbodyBall.AddForce(shootdirection * (5 + shootingPower * 25f), ForceMode.VelocityChange);
     }
 
-    public void PassBallToPlayer(Player receivingPlayer)
+    public void PassBallToPlayer()
     {
         soundShoot.Play();
-        Game.Instance.PlayerReceivingPass = receivingPlayer;
         LooseBall();
         if (Team.IsHuman)
         {
+            Game.Instance.PlayerReceivingPass = Game.Instance.HumanPlayerDestination;
             transform.LookAt(Game.Instance.PlayerReceivingPass.transform.position);
             Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
+        }
+        else
+        {
+            Game.Instance.PlayerReceivingPass = Game.Instance.AIPlayerDestination;
         }
         scriptBall.ExecutePass(this);
     }
@@ -262,6 +270,51 @@ public class Player : MonoBehaviour
         GetComponent<CharacterController>().enabled = false;
         transform.position = position;
         GetComponent<CharacterController>().enabled = true;
+    }
+
+    //  moves the player to the best defensive position: between enemy player and own goal
+    protected void MoveBehindEnemyPlayer()
+    {
+        Vector3 enemyPosition = Game.Instance.OtherTeam(team).Players[Number].transform.position + new Vector3(2 - 4 * team.PlayingSide, 0, 0);
+        Debug.DrawLine(enemyPosition, enemyPosition + new Vector3(0, 5), Color.red);
+        if ((enemyPosition - transform.position).magnitude < 1)
+        {
+            // already close enough, so stop moving
+            animator.SetFloat("Speed", 0);
+            return;
+        }
+//        Vector3 lookAtPosition = enemyPosition;
+//        lookAtPosition.y = transform.position.y;
+        Vector3 movedirection = enemyPosition - playerBallPosition.position;
+        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.z * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+        transform.rotation = Quaternion.LookRotation(movedirection);
+//        transform.LookAt(lookAtPosition);
+        transform.position += moveSpeed;
+        animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
+    }
+
+    // Move along on the x-axis with the player who has the ball, but on the same relative position as the formation
+    protected void MoveWithAttackingPlayer()
+    {
+        Vector2 targetPosition = new Vector2(spawnPosition.x + Game.Instance.PlayerWithBall.GetDeltaXFromSpawnPosition(), spawnPosition.y);
+        Vector2 movedirection = targetPosition - new Vector2(playerBallPosition.position.x, playerBallPosition.position.z);
+        float distanceToTarget = movedirection.magnitude;
+
+        if (distanceToTarget > 1)
+        {
+            Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.y * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            transform.position += moveSpeed;
+            animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
+        }
+        else
+        {
+            animator.SetFloat("Speed", 0);
+        }
+    }
+
+    public float GetDeltaXFromSpawnPosition()
+    { 
+        return transform.position.x - spawnPosition.x; 
     }
 
 }

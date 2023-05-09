@@ -11,6 +11,7 @@ public class Team
     Player playerClosestToBall;
     Player goalKeeper;
     bool isHuman;
+    Formation_ formation = Formation_._433;
 
     public Team(int number, int playingSide, bool isHuman)
     {
@@ -27,4 +28,5 @@ public class Team
     public Stats Stats { get => stats; set => stats = value; }
     public int PlayingSide { get => playingSide; set => playingSide = value; }
     public bool IsHuman { get => isHuman; set => isHuman = value; }
+    public Formation_ Formation { get => formation; set => formation = value; }
 }

@@ -87,6 +87,24 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "ChangeQuality",
+                    "type": "Button",
+                    "id": "cb15664c-c88b-4ea6-a59a-07e61192a6df",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectNextPlayer",
+                    "type": "Button",
+                    "id": "e44961a4-3547-41cc-ab88-5da5dce78dfa",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ViewThirdPerson",
                     "type": "Button",
                     "id": "31fe754d-b883-489a-b9e7-3f3708311ef2",
@@ -114,18 +132,36 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "ChangeQuality",
+                    "name": "Formation_343",
                     "type": "Button",
-                    "id": "cb15664c-c88b-4ea6-a59a-07e61192a6df",
+                    "id": "bdc09af7-9b23-45f5-b39e-94ee64c3cd0b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SelectNextPlayer",
+                    "name": "Formation_433",
                     "type": "Button",
-                    "id": "e44961a4-3547-41cc-ab88-5da5dce78dfa",
+                    "id": "b126520f-d089-447f-8db8-635130250e6a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Formation_442",
+                    "type": "Button",
+                    "id": "da0cbae6-3870-4224-a2d7-04b428bcce25",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Formation_532",
+                    "type": "Button",
+                    "id": "a1baf3c9-20ca-4224-8b8c-5d2398096456",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -410,6 +446,28 @@
                 },
                 {
                     "name": "",
+                    "id": "2e4214cc-9716-4956-9cc8-bdd26ba242c1",
+                    "path": "<Keyboard>/f4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ChangeQuality",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2282fb37-237a-4c65-80de-71f5f0bf3c02",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectNextPlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "14560438-e5de-45eb-8248-3fda906f952f",
                     "path": "<Keyboard>/f1",
                     "interactions": "",
@@ -443,23 +501,45 @@
                 },
                 {
                     "name": "",
-                    "id": "2e4214cc-9716-4956-9cc8-bdd26ba242c1",
-                    "path": "<Keyboard>/f4",
+                    "id": "71f8fafe-8328-4292-9afe-e3c1a9497cda",
+                    "path": "<Keyboard>/f5",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "ChangeQuality",
+                    "action": "Formation_343",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "2282fb37-237a-4c65-80de-71f5f0bf3c02",
-                    "path": "<Keyboard>/tab",
+                    "id": "14e0d3a5-5fac-49b8-b962-623933487d71",
+                    "path": "<Keyboard>/f8",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "SelectNextPlayer",
+                    "action": "Formation_532",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "87d4c76e-ab24-4917-bdfe-e96c522d5ea5",
+                    "path": "<Keyboard>/f7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Formation_442",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "baffc6f3-924f-4150-947c-488afe2afa68",
+                    "path": "<Keyboard>/f6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Formation_433",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

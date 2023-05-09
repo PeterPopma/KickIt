@@ -50,12 +50,11 @@ public class HumanPlayer : Player
                 inputSystem.pass = false;
                 if (HasBall)
                 {
-
                     SetPlayerAction(ActionType_.Pass);
                 }
                 else
                 {
-                    Game.Instance.ActivateHumanPlayer(Game.Instance.NextHumanPlayer);
+                    Game.Instance.ActivateHumanPlayer(Game.Instance.HumanPlayerDestination);
                 }
             }
 

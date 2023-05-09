@@ -179,7 +179,7 @@ CharacterController:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Height: 1.8
   m_Radius: 0.28
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballHandPosition: {fileID: 4330862101434419768}
-  movementSpeed: 4
+  movementSpeed: 8
 --- !u!1001 &1072094415860689442
 PrefabInstance:
   m_ObjectHideFlags: 0
