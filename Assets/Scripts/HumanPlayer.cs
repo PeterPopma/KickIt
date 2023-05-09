@@ -94,6 +94,7 @@ public class HumanPlayer : Player
             {
                 inputSystem.shoot = false;
                 Game.Instance.Recorder.EndReplay();
+                Game.Instance.Recorder.EndReplay();
             }
         }
     }

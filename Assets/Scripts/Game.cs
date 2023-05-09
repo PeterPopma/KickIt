@@ -174,8 +174,6 @@ public class Game : MonoBehaviour
         teamKickOff = teams[1];
         
         ChangeShirt();
-        
-        ResetMatchStats();
     }
 
     public void SetMessage(string message)
@@ -337,6 +335,8 @@ public class Game : MonoBehaviour
         switch (newGameState)
         {
             case GameState_.NewMatch:
+                gameTimer.InitTimer();
+                ResetMatchStats();
                 canvasGameOver.enabled = false;
                 canvasGame.enabled = true;
                 KickOff();
@@ -397,10 +397,13 @@ public class Game : MonoBehaviour
         }
         GameObject.Find("CanvasGameOver/Panel/TextBallPosession0").GetComponent<TextMeshProUGUI>().SetText(ballpossessionTeam0.ToString("0") + " %");
         GameObject.Find("CanvasGameOver/Panel/TextBallPosession1").GetComponent<TextMeshProUGUI>().SetText(ballpossessionTeam1.ToString("0") + " %");
-        float ballOnHalf = 100 * teams[0].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
-        GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf0").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
-        ballOnHalf = 100 * teams[1].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
-        GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf1").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
+        if ((teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf) > 0)
+        {
+            float ballOnHalf = 100 * teams[0].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
+            GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf0").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
+            ballOnHalf = 100 * teams[1].Stats.BallOnHalf / (teams[0].Stats.BallOnHalf + teams[1].Stats.BallOnHalf);
+            GameObject.Find("CanvasGameOver/Panel/TextBallOnHalf1").GetComponent<TextMeshProUGUI>().SetText(ballOnHalf.ToString("0") + " %");
+        }
         GameObject.Find("CanvasGameOver/Panel/TextShots0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.Shots.ToString());
         GameObject.Find("CanvasGameOver/Panel/TextShots1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.Shots.ToString());
         GameObject.Find("CanvasGameOver/Panel/TextShotsOnGoal0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.ShotsOnGoal.ToString());
@@ -606,14 +609,19 @@ public class Game : MonoBehaviour
     public void SetNextHumanPlayer()
     {
         humanPlayerDestination.transform.Find("SelectedMarker").gameObject.SetActive(false);
-        if (humanPlayerDestination.Number<humanPlayerDestination.Team.Players.Count-1)
+        do
         {
-            humanPlayerDestination = (HumanPlayer)humanPlayerDestination.Team.Players[humanPlayerDestination.Number+1];
+            if (humanPlayerDestination.Number < humanPlayerDestination.Team.Players.Count - 1)
+            {
+                humanPlayerDestination = (HumanPlayer)humanPlayerDestination.Team.Players[humanPlayerDestination.Number + 1];
+            }
+            else
+            {
+                humanPlayerDestination = (HumanPlayer)humanPlayerDestination.Team.Players[0];
+            }
         }
-        else
-        {
-            humanPlayerDestination = (HumanPlayer)humanPlayerDestination.Team.Players[0];
-        }
+        while (humanPlayerDestination == activeHumanPlayer);
+
         humanPlayerDestination.transform.Find("SelectedMarker").gameObject.SetActive(true);
     }
 
@@ -638,5 +646,6 @@ public class Game : MonoBehaviour
 
         return closestPlayer;
     }
+
 
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class GameInput : MonoBehaviour
 {
@@ -109,6 +110,15 @@ public class GameInput : MonoBehaviour
 	public void OnSelectNextPlayer(InputValue value)
 	{
 		scriptGame.SetNextHumanPlayer();
+	}
+	public void OnContinue()
+	{
+		scriptGame.SetGameState(GameState_.NewMatch);
+	}
+
+	public void OnBack()
+	{
+		SceneManager.LoadSceneAsync("Menu");
 	}
 
 #if !UNITY_IOS || !UNITY_ANDROID

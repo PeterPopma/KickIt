@@ -23,19 +23,7 @@ public class HumanFieldPlayer : HumanPlayer
     new void Update()
     {
         base.Update();
-
-        if (Game.Instance.ActiveHumanPlayer != this)
-        {
-            if (Game.Instance.TeamWithBall != team)
-            {
-                MoveBehindEnemyPlayer();
-            }
-            else
-            {
-                MoveWithAttackingPlayer();
-            }
-        }
-        
+       
         if (DoingThrow && Game.Instance.GameState == GameState_.BringingBallIn)
         {
             if (inputSystem.pass)
@@ -60,6 +48,23 @@ public class HumanFieldPlayer : HumanPlayer
                     SetPlayerAction(ActionType_.ThrowinShot, shootingPower);
                 }
                 shootingPower = 0;
+            }
+        }
+
+        if (Game.Instance.GameState != GameState_.Playing)
+        {
+            return;
+        }
+
+        if (Game.Instance.ActiveHumanPlayer != this)
+        {
+            if (Game.Instance.TeamWithBall != team)
+            {
+                MoveBehindEnemyPlayer();
+            }
+            else
+            {
+                MoveWithAttackingPlayer();
             }
         }
     }
