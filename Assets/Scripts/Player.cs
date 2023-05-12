@@ -32,6 +32,8 @@ public class Player : MonoBehaviour
     private bool doingKick;
     private bool movementDisabled;
     private Vector2 spawnPosition;
+    private float speed;
+    Vector3 previousPosition;
 
     public bool HasBall { get => hasBall; set => hasBall = value; }
     public Transform PlayerBallPosition { get => playerBallPosition; set => playerBallPosition = value; }
@@ -50,7 +52,7 @@ public class Player : MonoBehaviour
     public float TakeBallDelay { get => takeBallDelay; set => takeBallDelay = value; }
     public int Number { get => number; set => number = value; }
     public Vector2 SpawnPosition { get => spawnPosition; set => spawnPosition = value; }
-
+    public float Speed { get => speed; set => speed = value; }
 
     protected void Awake()
     {
@@ -73,6 +75,12 @@ public class Player : MonoBehaviour
 
     protected void Update()
     {
+        if (Time.deltaTime > 0)
+        {
+            speed = (transform.position - previousPosition).magnitude / Time.deltaTime;
+            previousPosition = transform.position;
+        }
+
         if (!Game.Instance.GameState.Equals(GameState_.Replay))
         {
             playerAction.Update();
@@ -181,6 +189,10 @@ public class Player : MonoBehaviour
             {
                 soundOuch.Play();
                 player.SetPlayerAction(ActionType_.Fall);
+                if (player.Speed == 0)
+                {
+                    Game.Instance.GiveYellowCard(this);
+                }
             }
         }
     }

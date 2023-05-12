@@ -39,6 +39,7 @@ public class Game : MonoBehaviour
 
     public const int NUM_FIELDPLAYERS = 10;          // between 1 and 10
     public const float DELAY_SCOREGOAL = 0.5f;                  // Wait a little bit after scoring to show at playback
+    public const float DELAY_YELLOW_CARD = 0.8f;
     public const float HAVING_BALL_SLOWDOWN_FACTOR = 0.8f;
     public const float PLAYER_Y_POSITION = 0.5f;
     public const float FIELD_BOUNDARY_LOWER_X = -53.047f;
@@ -57,6 +58,7 @@ public class Game : MonoBehaviour
     [SerializeField] private GameObject pfPlayerAI;
     [SerializeField] private GameObject pfGoalkeeperHuman;
     [SerializeField] private GameObject pfGoalkeeperAI;
+    [SerializeField] private GameObject referee;
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
@@ -91,6 +93,7 @@ public class Game : MonoBehaviour
     private Team teamKickOff;
     private float timeGameStateStarted;
     private float timeShowMessageStarted;
+    private float delayYellowCard;
     private float goalTextColorAlpha;
     private float delayScoreGoal;
     private List<Team> teams = new();
@@ -117,6 +120,7 @@ public class Game : MonoBehaviour
     public Player PlayerTakingPenalty { get => playerTakingPenalty; set => playerTakingPenalty = value; }
     public CinemachineVirtualCamera StadiumCamera { get => stadiumCamera; set => stadiumCamera = value; }
     public AIPlayer AIPlayerDestination { get => aIPlayerDestination; set => aIPlayerDestination = value; }
+    public GameObject Referee { get => referee; set => referee = value; }
 
     private void InitGamePlayerVsPC()
     {
@@ -241,6 +245,12 @@ public class Game : MonoBehaviour
         scriptBall.PutOnCenterSpot();
         scriptBall.Rigidbody.velocity = Vector3.zero;
         scriptBall.Rigidbody.angularVelocity = Vector3.zero;
+    }
+
+    public void GiveYellowCard(Player player)
+    {
+        soundWhistle.Play();
+        delayYellowCard = DELAY_YELLOW_CARD;
     }
 
     public Player FieldPlayerClosestToBall(int teamNumber)
@@ -439,6 +449,15 @@ public class Game : MonoBehaviour
 
     public void Update()
     {
+        if (delayYellowCard > 0)
+        {
+            delayYellowCard -= Time.deltaTime;
+            if (delayYellowCard < 0)
+            {
+                Referee.GetComponent<Referee>().DrawYellowCard();
+            }
+        }
+
         if (textMessage.text.Length>0)
         {
             if (Time.time - timeShowMessageStarted > 1)

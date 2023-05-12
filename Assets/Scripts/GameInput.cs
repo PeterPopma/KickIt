@@ -94,7 +94,8 @@ public class GameInput : MonoBehaviour
 
 	public void OnTest(InputValue value)
 	{
-		scriptGame.ActiveHumanPlayer.GetComponent<InputSystem>().TestInput(value.isPressed);
+		//scriptGame.ActiveHumanPlayer.GetComponent<InputSystem>().TestInput(value.isPressed);
+		scriptGame.GiveYellowCard(null);
 	}
 
 	public void OnDiveRight(InputValue value)
@@ -113,12 +114,18 @@ public class GameInput : MonoBehaviour
 	}
 	public void OnContinue()
 	{
-		scriptGame.SetGameState(GameState_.NewMatch);
+        if (scriptGame.GameState.Equals(GameState_.MatchOver))
+        {
+			scriptGame.SetGameState(GameState_.NewMatch);
+		}
 	}
 
 	public void OnBack()
 	{
-		SceneManager.LoadSceneAsync("Menu");
+		if (scriptGame.GameState.Equals(GameState_.MatchOver))
+		{
+			SceneManager.LoadSceneAsync("Menu");
+		}
 	}
 
 #if !UNITY_IOS || !UNITY_ANDROID

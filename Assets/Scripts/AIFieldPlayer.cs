@@ -5,9 +5,8 @@ using UnityEngine.InputSystem;
 
 public class AIFieldPlayer : AIPlayer
 {
-    [SerializeField] private float movementSpeed = 4.0f;
-    private Vector3 targetGoalPosition;
-    private Vector3 ownGoalPosition;
+    private Vector2 targetGoalPosition;
+    private Vector2 ownGoalPosition;
     private const float DELAY_AFTER_ACTION = 8.0f;
     private float delayAfterAction;
 
@@ -20,8 +19,8 @@ public class AIFieldPlayer : AIPlayer
     {
         base.Start();
 
-        targetGoalPosition = new Vector3(51.93f, Game.PLAYER_Y_POSITION, 0.24f);
-        ownGoalPosition = new Vector3(-52.37f, Game.PLAYER_Y_POSITION, -0.22f);
+        targetGoalPosition = new Vector2(51.93f, 0.24f);
+        ownGoalPosition = new Vector2(-52.37f, -0.22f);
     }
 
     new void Update()
@@ -84,7 +83,7 @@ public class AIFieldPlayer : AIPlayer
         if (distanceToTarget > 1)
         {
             // move to target location
-            float speed = movementSpeed;
+            float speed = NORMAL_MOVEMENT_SPEED;
 
             speed *= Game.HAVING_BALL_SLOWDOWN_FACTOR;
             Vector3 moveSpeed = new Vector3(movedirection.normalized.x * speed * Time.deltaTime, 0, movedirection.normalized.z * speed * Time.deltaTime);
@@ -120,7 +119,7 @@ public class AIFieldPlayer : AIPlayer
         Vector3 mostDangerousEnemyPlayer = Game.Instance.PlayerClosestToLocation(0, ownGoalPosition).transform.position;
         Vector3 targetLocation = Vector3.Lerp(ownGoalPosition, mostDangerousEnemyPlayer, 0.5f);
         Vector3 movedirection = targetLocation - playerBallPosition.position;
-        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * movementSpeed * Time.deltaTime, 0, movedirection.normalized.z * movementSpeed * Time.deltaTime);
+        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.z * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
         transform.position += moveSpeed;
 
         if (moveSpeed.magnitude > 0.005)
@@ -132,18 +131,17 @@ public class AIFieldPlayer : AIPlayer
             transform.LookAt(mostDangerousEnemyPlayer);
         }
 
-        animator.SetFloat("Speed", movementSpeed * 2);
+        animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
     }
 
     private void MoveToBall()
     {
-        Vector3 lookAtPosition = transformBall.position;
-        lookAtPosition.y = transform.position.y;
+        Vector3 lookAtPosition = new Vector3(transformBall.position.x, transform.position.y, transformBall.position.z);
         transform.LookAt(lookAtPosition);
         Vector3 movedirection = transformBall.position - playerBallPosition.position;
-        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * movementSpeed * Time.deltaTime, 0, movedirection.normalized.z * movementSpeed * Time.deltaTime);
+        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.z * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
         transform.position += moveSpeed;
-        animator.SetFloat("Speed", movementSpeed * 2);
+        animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
     }
 
     public void PrepareForPenalty()
