@@ -70,6 +70,8 @@ public class Game : MonoBehaviour
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam0;
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam1;
     [SerializeField] private GameTimer gameTimer;
+    [SerializeField] private Image imageTeam0;
+    [SerializeField] private Image imageTeam1;
     private GameMode_ gameMode;
     private GameState_ gameState;
     private GameState_ nextGameState;
@@ -116,7 +118,8 @@ public class Game : MonoBehaviour
     public Transform[] Goals { get => goals; set => goals = value; }
     public CinemachineVirtualCamera GoalKeeperCameraTeam0 { get => goalKeeperCameraTeam0; set => goalKeeperCameraTeam0 = value; }
     public CinemachineVirtualCamera GoalKeeperCameraTeam1 { get => goalKeeperCameraTeam1; set => goalKeeperCameraTeam1 = value; }
-    public GameObject SpawnPositionGoalkeeperRed { get => spawnPositionGoalkeeperLeftSide; set => spawnPositionGoalkeeperLeftSide = value; }
+    public GameObject SpawnPositionGoalkeeperLeftSide { get => spawnPositionGoalkeeperLeftSide; set => spawnPositionGoalkeeperLeftSide = value; }
+    public GameObject SpawnPositionGoalkeeperRightSide { get => spawnPositionGoalkeeperRightSide; set => spawnPositionGoalkeeperRightSide = value; }
     public Player PlayerTakingPenalty { get => playerTakingPenalty; set => playerTakingPenalty = value; }
     public CinemachineVirtualCamera StadiumCamera { get => stadiumCamera; set => stadiumCamera = value; }
     public AIPlayer AIPlayerDestination { get => aIPlayerDestination; set => aIPlayerDestination = value; }
@@ -208,8 +211,8 @@ public class Game : MonoBehaviour
         soundCheer2 = GameObject.Find("Sound/cheer2").GetComponent<AudioSource>();
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
         scriptBall = GameObject.Find("Ball").GetComponent<Ball>();
-        sliderPowerBar = GameObject.Find("CanvasGame/Panel/PowerBar").GetComponent<Slider>();
-        powerBar = GameObject.Find("CanvasGame/Panel/PowerBar");
+        sliderPowerBar = GameObject.Find("CanvasGame/Player/PowerBar").GetComponent<Slider>();
+        powerBar = GameObject.Find("CanvasGame/Player/PowerBar");
         powerBar.SetActive(false);
 
         if (Settings.GameMode.Equals(GameMode_.PlayerVsPc))
@@ -306,7 +309,7 @@ public class Game : MonoBehaviour
         {
             soundCheer2.Play();
         }
-        textScore.text = "Score: " + teams[0].Stats.Score + "-" + teams[1].Stats.Score;
+        textScore.text = teams[0].Stats.Score + " - " + teams[1].Stats.Score;
         playerLastTouchedBall.SetPlayerAction(ActionType_.Cheer, 0 , true);
         playerLastTouchedBall.Team.Stats.ShotsOnGoal++;
         playerLastTouchedBall.Team.Stats.Goals.Add(new Goal(playerLastTouchedBall.name, gameTimer.TimePassedAs90Minutes()));
@@ -581,6 +584,28 @@ public class Game : MonoBehaviour
         }
     }
 
+    private void SetTeamNameBackgroundColor(Material shirt, Image image)
+    {
+        switch (shirt.name)
+        {
+            case "ShirtBlue":
+                image.color = new Color(0, 0, 1, 0.5f);
+                break;
+            case "ShirtGreen":
+                image.color = new Color(0, 1, 0, 0.5f);
+                break;
+            case "ShirtRed":
+                image.color = new Color(1, 0, 0, 0.5f);
+                break;
+            case "ShirtWhite":
+                image.color = new Color(1, 1, 1, 0.5f);
+                break;
+            case "ShirtPurple":
+                image.color = new Color(0.6f, 0, 1, 0.5f);
+                break;
+        }
+    }
+
     public void ChangeShirt()
     {
         Material shirtTeam0 = materialBody[Random.Range(0, materialBody.Length)];
@@ -591,6 +616,7 @@ public class Game : MonoBehaviour
                 player.transform.Find("Geometry/Root/Ch38_Shirt").GetComponent<Renderer>().material = shirtTeam0;
             }
         }
+        SetTeamNameBackgroundColor(shirtTeam0, imageTeam0);
 
         Material shirtTeam1;
         do
@@ -604,6 +630,7 @@ public class Game : MonoBehaviour
                 player.transform.Find("Geometry/Root/Ch38_Shirt").GetComponent<Renderer>().material = shirtTeam1;
             }
         }
+        SetTeamNameBackgroundColor(shirtTeam1, imageTeam1);
     }
 
     public Player GetPlayerToThrowIn()
@@ -666,5 +693,9 @@ public class Game : MonoBehaviour
         return closestPlayer;
     }
 
+    public Vector3 SpawnPositionGoalkeeper(Team team) 
+    {
+        return team.PlayingSide == 0 ? spawnPositionGoalkeeperLeftSide.transform.position : spawnPositionGoalkeeperRightSide.transform.position;
+    }
 
 }

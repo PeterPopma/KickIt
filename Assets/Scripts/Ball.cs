@@ -242,7 +242,8 @@ public class Ball : MonoBehaviour
             if (Time.time - timePassedBall > 0.2 && playerFollowCamera.Follow != Game.Instance.PlayerReceivingPass.PlayerCameraRoot)
             {
                 // switch player camera a bit before the player receives the ball
-                playerFollowCamera.Follow = Game.Instance.PlayerReceivingPass.PlayerCameraRoot;
+                Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
+//                playerFollowCamera.Follow = Game.Instance.PlayerReceivingPass.PlayerCameraRoot;
             }
         }
 

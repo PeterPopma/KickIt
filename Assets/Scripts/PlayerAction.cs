@@ -110,8 +110,8 @@ public class PlayerAction
             case ActionType_.Pass:
                 if (player is HumanGoalkeeper)      // goalkick
                 {
-                    player.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
-                    Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
+                    player.transform.position = Game.Instance.SpawnPositionGoalkeeper(player.Team);
+                    //Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
                 }
                 break;
             case ActionType_.GoalKeeperDiveLeft:                
@@ -120,7 +120,7 @@ public class PlayerAction
             case ActionType_.GoalKeeperBlockRight:
             case ActionType_.GoalKeeperJump:
             case ActionType_.GoalKeeperCatch:
-                player.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
+                player.transform.position = Game.Instance.SpawnPositionGoalkeeper(player.Team);
                 break;
         }
     }

@@ -9,6 +9,8 @@ public class Referee : MonoBehaviour
     protected Ball scriptBall;
     protected Animator animator;
     float timeleftShowYellowCard = 0;
+    float speed, targetSpeed;
+    Quaternion targetRotation;
 
     private void Awake()
     {
@@ -54,28 +56,43 @@ public class Referee : MonoBehaviour
     void MoveAlongWithBall()
     {
         float distanceToBall = (scriptBall.transform.position - transform.position).magnitude;
-        Vector3 directionToBall = scriptBall.transform.position - transform.position;
+        Vector2 directionToBall = new Vector2(scriptBall.transform.position.x - transform.position.x, scriptBall.transform.position.z - transform.position.z).normalized;
+
         if (distanceToBall > 9)
-        {
+        {   
             // move in direction of ball
-            transform.LookAt(new Vector3(directionToBall.x, transform.position.y, directionToBall.z));
-            Vector3 moveSpeed = new Vector3(directionToBall.normalized.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, directionToBall.normalized.z * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
-            transform.position += moveSpeed;
-            animator.SetFloat("Speed", Player.NORMAL_MOVEMENT_SPEED * 2);
+            Vector3 moveDirection = new Vector3(directionToBall.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, directionToBall.y * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.position += moveDirection;
+            targetSpeed = Player.NORMAL_MOVEMENT_SPEED * 2;
         }
         else if (distanceToBall < 8)
         {
             // move away from ball
-            transform.LookAt(new Vector3(-directionToBall.x, transform.position.y, -directionToBall.z));
-            Vector3 moveSpeed = new Vector3(-directionToBall.normalized.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, -directionToBall.normalized.z * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
-            transform.position += moveSpeed;
-            animator.SetFloat("Speed", Player.NORMAL_MOVEMENT_SPEED * 2);
+            Vector3 moveDirection = new Vector3(-directionToBall.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, -directionToBall.y * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.position += moveDirection;
+            targetSpeed = Player.NORMAL_MOVEMENT_SPEED * 2;
         }
         else
         {
-            transform.LookAt(new Vector3(directionToBall.x, transform.position.y, directionToBall.z));
-            animator.SetFloat("Speed", 0);
-        } 
+            // look at ball
+            targetRotation = Quaternion.LookRotation(new Vector3(directionToBall.x, 0, directionToBall.y));
+            targetSpeed = 0;
+        }
+
+        if (speed > targetSpeed)
+        {
+            speed -= Time.deltaTime * 40;
+        }
+        if (speed < targetSpeed)
+        {
+            speed += Time.deltaTime * 40;
+        }
+
+        animator.SetFloat("Speed", speed);
+
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 300f);
     }
 
 

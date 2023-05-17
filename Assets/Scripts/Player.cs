@@ -32,8 +32,8 @@ public class Player : MonoBehaviour
     private bool doingKick;
     private bool movementDisabled;
     private Vector2 spawnPosition;
-    private float speed;
-    Vector3 previousPosition;
+    private float speed, targetSpeed;
+    Quaternion targetRotation;
 
     public bool HasBall { get => hasBall; set => hasBall = value; }
     public Transform PlayerBallPosition { get => playerBallPosition; set => playerBallPosition = value; }
@@ -75,12 +75,26 @@ public class Player : MonoBehaviour
 
     protected void Update()
     {
-        if (Time.deltaTime > 0)
+        if (this != Game.Instance.ActiveHumanPlayer)
         {
-            speed = (transform.position - previousPosition).magnitude / Time.deltaTime;
-            previousPosition = transform.position;
-        }
+            if (speed > targetSpeed)
+            {
+                speed -= Time.deltaTime * 40;
+                if (speed < 0)
+                {
+                    speed = 0;
+                }
+            }
+            if (speed < targetSpeed)
+            {
+                speed += Time.deltaTime * 40;
+            }
 
+            animator.SetFloat("Speed", speed);
+
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 300f);
+        }
+        
         if (!Game.Instance.GameState.Equals(GameState_.Replay))
         {
             playerAction.Update();
@@ -268,7 +282,6 @@ public class Player : MonoBehaviour
         {
             Game.Instance.PlayerReceivingPass = Game.Instance.HumanPlayerDestination;
             transform.LookAt(Game.Instance.PlayerReceivingPass.transform.position);
-            Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.PlayerReceivingPass);
         }
         else
         {
@@ -288,21 +301,16 @@ public class Player : MonoBehaviour
     protected void MoveBehindEnemyPlayer()
     {
         Vector3 enemyPosition = Game.Instance.OtherTeam(team).Players[Number].transform.position + new Vector3(2 - 4 * team.PlayingSide, 0, 0);
-        Debug.DrawLine(enemyPosition, enemyPosition + new Vector3(0, 5), Color.red);
         if ((enemyPosition - transform.position).magnitude < 1)
         {
             // already close enough, so stop moving
-            animator.SetFloat("Speed", 0);
+            targetSpeed = 0;
             return;
         }
-//        Vector3 lookAtPosition = enemyPosition;
-//        lookAtPosition.y = transform.position.y;
-        Vector3 movedirection = enemyPosition - playerBallPosition.position;
-        Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.z * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
-        transform.rotation = Quaternion.LookRotation(movedirection);
-//        transform.LookAt(lookAtPosition);
-        transform.position += moveSpeed;
-        animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
+        Vector3 moveDirection = new Vector3(enemyPosition.x, 0, enemyPosition.z).normalized;
+        targetRotation = Quaternion.LookRotation(moveDirection); 
+        transform.position += moveDirection * NORMAL_MOVEMENT_SPEED * Time.deltaTime;
+        targetSpeed = NORMAL_MOVEMENT_SPEED * 2;
     }
 
     // Move along on the x-axis with the player who has the ball, but on the same relative position as the formation
@@ -315,12 +323,13 @@ public class Player : MonoBehaviour
         if (distanceToTarget > 1)
         {
             Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.y * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            targetRotation = Quaternion.LookRotation(new Vector3(movedirection.x, 0, movedirection.y));
             transform.position += moveSpeed;
-            animator.SetFloat("Speed", NORMAL_MOVEMENT_SPEED * 2);
+            targetSpeed = NORMAL_MOVEMENT_SPEED * 2;
         }
         else
         {
-            animator.SetFloat("Speed", 0);
+            targetSpeed =  0;
         }
     }
 

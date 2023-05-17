@@ -55,7 +55,7 @@ public class HumanFieldPlayer : HumanPlayer
         {
             return;
         }
-
+        
         if (Game.Instance.ActiveHumanPlayer != this)
         {
             if (Game.Instance.TeamWithBall != team)
@@ -67,5 +67,6 @@ public class HumanFieldPlayer : HumanPlayer
                 MoveWithAttackingPlayer();
             }
         }
+
     }
 }

@@ -159,7 +159,7 @@ public class AIFieldPlayer : AIPlayer
         }
         Game.Instance.ActivateHumanPlayer((HumanPlayer)Game.Instance.Teams[0].GoalKeeper);
         Game.Instance.GoalKeeperCameraTeam0.enabled = true;
-        Game.Instance.Teams[0].GoalKeeper.transform.position = Game.Instance.SpawnPositionGoalkeeperRed.transform.position;
+        Game.Instance.Teams[0].GoalKeeper.transform.position = Game.Instance.SpawnPositionGoalkeeper(Game.Instance.Teams[0]);
     }
 
 
