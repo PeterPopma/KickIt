@@ -55,29 +55,28 @@ public class Referee : MonoBehaviour
 
     void MoveAlongWithBall()
     {
-        float distanceToBall = (scriptBall.transform.position - transform.position).magnitude;
-        Vector2 directionToBall = new Vector2(scriptBall.transform.position.x - transform.position.x, scriptBall.transform.position.z - transform.position.z).normalized;
+        Vector3 directionToBall = scriptBall.transform.position - transform.position;
 
-        if (distanceToBall > 9)
-        {   
+        if (directionToBall.magnitude > 9)
+        {
             // move in direction of ball
-            Vector3 moveDirection = new Vector3(directionToBall.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, directionToBall.y * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            Vector3 moveDirection = new Vector3(directionToBall.x, 0, directionToBall.z).normalized;
             targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.position += moveDirection;
+            transform.position += moveDirection * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime;
             targetSpeed = Player.NORMAL_MOVEMENT_SPEED * 2;
         }
-        else if (distanceToBall < 8)
+        else if (directionToBall.magnitude < 8)
         {
             // move away from ball
-            Vector3 moveDirection = new Vector3(-directionToBall.x * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, -directionToBall.y * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime);
+            Vector3 moveDirection = new Vector3(-directionToBall.x, 0, -directionToBall.z).normalized;
             targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.position += moveDirection;
+            transform.position += moveDirection * Player.NORMAL_MOVEMENT_SPEED * Time.deltaTime;
             targetSpeed = Player.NORMAL_MOVEMENT_SPEED * 2;
         }
         else
         {
             // look at ball
-            targetRotation = Quaternion.LookRotation(new Vector3(directionToBall.x, 0, directionToBall.y));
+            targetRotation = Quaternion.LookRotation(new Vector3(directionToBall.x, 0, directionToBall.z));
             targetSpeed = 0;
         }
 
@@ -94,6 +93,5 @@ public class Referee : MonoBehaviour
 
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 300f);
     }
-
 
 }

@@ -106,7 +106,7 @@ public class AIFieldPlayer : AIPlayer
     {
         if (Game.Instance.FieldPlayerClosestToBall(1) == this)
         {
-   //         MoveToBall();
+            MoveToBall();
         }
         else
         {

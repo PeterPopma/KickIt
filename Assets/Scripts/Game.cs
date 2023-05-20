@@ -59,6 +59,10 @@ public class Game : MonoBehaviour
     [SerializeField] private GameObject pfGoalkeeperHuman;
     [SerializeField] private GameObject pfGoalkeeperAI;
     [SerializeField] private GameObject referee;
+    [SerializeField] private TextMeshProUGUI textTeam0;
+    [SerializeField] private TextMeshProUGUI textTeam1;
+    [SerializeField] private TextMeshProUGUI textGameOverTeam0;
+    [SerializeField] private TextMeshProUGUI textGameOverTeam1;
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textGoal;
     [SerializeField] private TextMeshProUGUI textPlayer;
@@ -70,8 +74,11 @@ public class Game : MonoBehaviour
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam0;
     [SerializeField] private CinemachineVirtualCamera goalKeeperCameraTeam1;
     [SerializeField] private GameTimer gameTimer;
-    [SerializeField] private Image imageTeam0;
-    [SerializeField] private Image imageTeam1;
+    [SerializeField] private Image imageBackgroundNameTeam0;
+    [SerializeField] private Image imageBackgroundNameTeam1;
+    [SerializeField] private Image imageBackgroundGameOverTeam0;
+    [SerializeField] private Image imageBackgroundGameOverTeam1;
+    [SerializeField] private GameObject standStadiumCamera;
     private GameMode_ gameMode;
     private GameState_ gameState;
     private GameState_ nextGameState;
@@ -124,10 +131,11 @@ public class Game : MonoBehaviour
     public CinemachineVirtualCamera StadiumCamera { get => stadiumCamera; set => stadiumCamera = value; }
     public AIPlayer AIPlayerDestination { get => aIPlayerDestination; set => aIPlayerDestination = value; }
     public GameObject Referee { get => referee; set => referee = value; }
+    public GameObject StandStadiumCamera { get => standStadiumCamera; set => standStadiumCamera = value; }
 
     private void InitGamePlayerVsPC()
     {
-        Team team0 = new(0, 0, true);
+        Team team0 = new(0, "FC Bayern Munich", 0, true);
         teams.Add(team0);
 
         GameObject newPlayer = null;
@@ -157,7 +165,7 @@ public class Game : MonoBehaviour
         team0.GoalKeeper = goalkeeperTeam0.GetComponent<HumanGoalkeeper>();
         Formation.Set(team0, Formation_._433);
 
-        Team team1 = new Team(1, 1, false);
+        Team team1 = new Team(1, "Real Madrid", 1, false);
         teams.Add(team1);
 
         for (int playerNumber = 0; playerNumber < NUM_FIELDPLAYERS; playerNumber++)
@@ -179,7 +187,12 @@ public class Game : MonoBehaviour
         team1.GoalKeeper = goalkeeperTeam1.GetComponent<AIGoalkeeper>();
 
         teamKickOff = teams[1];
-        
+
+        textTeam0.text = team0.Name;
+        textTeam1.text = team1.Name;
+        textGameOverTeam0.text = team0.Name;
+        textGameOverTeam1.text = team1.Name;
+
         ChangeShirt();
     }
 
@@ -381,6 +394,7 @@ public class Game : MonoBehaviour
                 }
                 break;
             case GameState_.MatchOver:
+                soundWhistle.Play();
                 DisplayMatchStats();
                 canvasGame.enabled = false;
                 canvasGameOver.enabled = true;
@@ -390,16 +404,6 @@ public class Game : MonoBehaviour
 
     private void DisplayMatchStats()
     {
-        string textWon = "It's a draw!";
-        if(teams[0].Stats.Score> teams[1].Stats.Score)
-        {
-            textWon = "Team 0 won!";
-        }
-        if (teams[1].Stats.Score > teams[0].Stats.Score)
-        {
-            textWon = "Team 1 won!";
-        }
-        GameObject.Find("CanvasGameOver/Panel/TextWon").GetComponent<TextMeshProUGUI>().SetText(textWon);
         GameObject.Find("CanvasGameOver/Panel/TextGoals0").GetComponent<TextMeshProUGUI>().SetText(teams[0].Stats.Score.ToString());
         GameObject.Find("CanvasGameOver/Panel/TextGoals1").GetComponent<TextMeshProUGUI>().SetText(teams[1].Stats.Score.ToString());
         float ballpossessionTeam0 = 50, ballpossessionTeam1 = 50;
@@ -616,7 +620,8 @@ public class Game : MonoBehaviour
                 player.transform.Find("Geometry/Root/Ch38_Shirt").GetComponent<Renderer>().material = shirtTeam0;
             }
         }
-        SetTeamNameBackgroundColor(shirtTeam0, imageTeam0);
+        SetTeamNameBackgroundColor(shirtTeam0, imageBackgroundNameTeam0);
+        SetTeamNameBackgroundColor(shirtTeam0, imageBackgroundGameOverTeam0);
 
         Material shirtTeam1;
         do
@@ -630,7 +635,8 @@ public class Game : MonoBehaviour
                 player.transform.Find("Geometry/Root/Ch38_Shirt").GetComponent<Renderer>().material = shirtTeam1;
             }
         }
-        SetTeamNameBackgroundColor(shirtTeam1, imageTeam1);
+        SetTeamNameBackgroundColor(shirtTeam1, imageBackgroundNameTeam1);
+        SetTeamNameBackgroundColor(shirtTeam1, imageBackgroundGameOverTeam1);
     }
 
     public Player GetPlayerToThrowIn()

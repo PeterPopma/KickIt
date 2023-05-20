@@ -22,6 +22,7 @@ public class Ball : MonoBehaviour
     private Vector3 previousPosition;
     private new Rigidbody rigidbody;
     private AudioSource soundWhistle;
+    private AudioSource soundNearMiss;
     private const float BALL_GROUND_POSITION_Y = 0.72f;
     private const float PASSING_SPEED = 25f;
     private bool isOutOfField;
@@ -39,6 +40,7 @@ public class Ball : MonoBehaviour
         playerFollowCamera = GameObject.Find("VCam_PlayerFollow").GetComponent<CinemachineVirtualCamera>();
 
         soundWhistle = GameObject.Find("Sound/whistle").GetComponent<AudioSource>();
+        soundNearMiss = GameObject.Find("Sound/nearmiss").GetComponent<AudioSource>();
         rigidbody = GetComponent<Rigidbody>();
     }
 
@@ -120,6 +122,10 @@ public class Ball : MonoBehaviour
 
         if (transform.position.x < Game.FIELD_BOUNDARY_LOWER_X)
         {
+            if (transform.position.z>-8 && transform.position.z<8)
+            {
+                soundNearMiss.Play();
+            }
             isOutOfField = true;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched.Number == 0)
@@ -143,6 +149,10 @@ public class Ball : MonoBehaviour
 
         if (transform.position.x > Game.FIELD_BOUNDARY_UPPER_X)
         {
+            if (transform.position.z > -8 && transform.position.z < 8)
+            {
+                soundNearMiss.Play();
+            }
             isOutOfField = true;
             ballOutOfFieldTimeOut = 1.0f;
             if (Game.Instance.TeamLastTouched.Number == 1)

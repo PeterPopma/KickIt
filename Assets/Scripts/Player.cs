@@ -297,7 +297,7 @@ public class Player : MonoBehaviour
         GetComponent<CharacterController>().enabled = true;
     }
 
-    //  moves the player to the best defensive position: between enemy player and own goal
+    // moves the player to the best defensive position: between enemy player and own goal
     protected void MoveBehindEnemyPlayer()
     {
         Vector3 enemyPosition = Game.Instance.OtherTeam(team).Players[Number].transform.position + new Vector3(2 - 4 * team.PlayingSide, 0, 0);
@@ -307,7 +307,7 @@ public class Player : MonoBehaviour
             targetSpeed = 0;
             return;
         }
-        Vector3 moveDirection = new Vector3(enemyPosition.x, 0, enemyPosition.z).normalized;
+        Vector3 moveDirection = new Vector3(enemyPosition.x - transform.position.x, 0, enemyPosition.z - transform.position.z).normalized;
         targetRotation = Quaternion.LookRotation(moveDirection); 
         transform.position += moveDirection * NORMAL_MOVEMENT_SPEED * Time.deltaTime;
         targetSpeed = NORMAL_MOVEMENT_SPEED * 2;
@@ -318,14 +318,13 @@ public class Player : MonoBehaviour
     {
         Vector2 targetPosition = new Vector2(spawnPosition.x + Game.Instance.PlayerWithBall.GetDeltaXFromSpawnPosition(), spawnPosition.y);
         Vector2 movedirection = targetPosition - new Vector2(playerBallPosition.position.x, playerBallPosition.position.z);
-        float distanceToTarget = movedirection.magnitude;
 
-        if (distanceToTarget > 1)
+        if (movedirection.magnitude > 1)
         {
-            Vector3 moveSpeed = new Vector3(movedirection.normalized.x * NORMAL_MOVEMENT_SPEED * Time.deltaTime, 0, movedirection.normalized.y * NORMAL_MOVEMENT_SPEED * Time.deltaTime);
-            targetRotation = Quaternion.LookRotation(new Vector3(movedirection.x, 0, movedirection.y));
-            transform.position += moveSpeed;
+            Vector3 moveSpeed = new Vector3(movedirection.normalized.x, 0, movedirection.normalized.y);
+            transform.position += moveSpeed * NORMAL_MOVEMENT_SPEED * Time.deltaTime;
             targetSpeed = NORMAL_MOVEMENT_SPEED * 2;
+            targetRotation = Quaternion.LookRotation(new Vector3(movedirection.x, 0, movedirection.y));
         }
         else
         {

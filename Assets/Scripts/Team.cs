@@ -5,6 +5,7 @@ using UnityEngine;
 public class Team
 {
     int number;
+    string name;
     int playingSide;            // 0 = left side, 1 = right side
     Stats stats = new Stats();
     List<Player> players = new List<Player>();
@@ -13,9 +14,10 @@ public class Team
     bool isHuman;
     Formation_ formation = Formation_._433;
 
-    public Team(int number, int playingSide, bool isHuman)
+    public Team(int number, string name, int playingSide, bool isHuman)
     {
         this.number = number;
+        this.name = name;
         this.playingSide = playingSide;
         this.isHuman = isHuman;
     }
@@ -29,4 +31,5 @@ public class Team
     public int PlayingSide { get => playingSide; set => playingSide = value; }
     public bool IsHuman { get => isHuman; set => isHuman = value; }
     public Formation_ Formation { get => formation; set => formation = value; }
+    public string Name { get => name; set => name = value; }
 }

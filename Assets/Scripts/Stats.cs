@@ -34,7 +34,7 @@ public class Stats
             goalText += goal.Time + " - " + goal.Name + "<br>";
             numlines++;
         }
-        while (numlines < 3)
+        while (numlines < 4)
         {
             numlines++;
             goalText += ".<br>";
