@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GameTimer : MonoBehaviour
 {
-    private const float GAME_DURATION = 12;        // game duration in seconds
+    private const float GAME_DURATION = 120;        // game duration in seconds
     [SerializeField] private TextMeshProUGUI textGameTime;
     private float startTime;
     private float timePassed;

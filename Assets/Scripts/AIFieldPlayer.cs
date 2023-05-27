@@ -136,6 +136,7 @@ public class AIFieldPlayer : AIPlayer
 
     private void MoveToBall()
     {
+        return;
         Vector3 lookAtPosition = new Vector3(transformBall.position.x, transform.position.y, transformBall.position.z);
         transform.LookAt(lookAtPosition);
         Vector3 movedirection = transformBall.position - playerBallPosition.position;

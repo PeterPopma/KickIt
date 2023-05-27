@@ -78,7 +78,6 @@ public class Game : MonoBehaviour
     [SerializeField] private Image imageBackgroundNameTeam1;
     [SerializeField] private Image imageBackgroundGameOverTeam0;
     [SerializeField] private Image imageBackgroundGameOverTeam1;
-    [SerializeField] private GameObject standStadiumCamera;
     private GameMode_ gameMode;
     private GameState_ gameState;
     private GameState_ nextGameState;
@@ -131,15 +130,13 @@ public class Game : MonoBehaviour
     public CinemachineVirtualCamera StadiumCamera { get => stadiumCamera; set => stadiumCamera = value; }
     public AIPlayer AIPlayerDestination { get => aIPlayerDestination; set => aIPlayerDestination = value; }
     public GameObject Referee { get => referee; set => referee = value; }
-    public GameObject StandStadiumCamera { get => standStadiumCamera; set => standStadiumCamera = value; }
 
     private void InitGamePlayerVsPC()
     {
         Team team0 = new(0, "FC Bayern Munich", 0, true);
         teams.Add(team0);
 
-        GameObject newPlayer = null;
-
+        GameObject newPlayer;
         for (int playerNumber = 0; playerNumber < NUM_FIELDPLAYERS; playerNumber++)
         {
             newPlayer = Instantiate(pfPlayerHuman);
@@ -148,6 +145,7 @@ public class Game : MonoBehaviour
             newPlayer.GetComponent<HumanFieldPlayer>().Team = team0;
             newPlayer.transform.Find("Geometry/Root/Ch38_Hair").GetComponent<Renderer>().material = materialHair[Random.Range(0, materialHair.Length)];
             newPlayer.transform.Find("SelectedMarker").gameObject.SetActive(false);
+            newPlayer.transform.Find("TargetMarker").gameObject.SetActive(false);
             team0.Players.Add(newPlayer.GetComponent<HumanFieldPlayer>());
         }
 
@@ -161,6 +159,8 @@ public class Game : MonoBehaviour
         GameObject goalkeeperTeam0 = Instantiate(pfGoalkeeperHuman, spawnPositionGoalkeeperLeftSide.transform.position, spawnPositionGoalkeeperLeftSide.transform.rotation);
         goalkeeperTeam0.name = "Goalie 0";
         goalkeeperTeam0.GetComponent<HumanGoalkeeper>().Team = team0;
+        goalkeeperTeam0.transform.Find("SelectedMarker").gameObject.SetActive(false);
+        goalkeeperTeam0.transform.Find("TargetMarker").gameObject.SetActive(false);
         team0.Players.Add(goalkeeperTeam0.GetComponent<HumanGoalkeeper>());
         team0.GoalKeeper = goalkeeperTeam0.GetComponent<HumanGoalkeeper>();
         Formation.Set(team0, Formation_._433);
@@ -186,7 +186,7 @@ public class Game : MonoBehaviour
         team1.Players.Add(goalkeeperTeam1.GetComponent<AIGoalkeeper>());
         team1.GoalKeeper = goalkeeperTeam1.GetComponent<AIGoalkeeper>();
 
-        teamKickOff = teams[1];
+        teamKickOff = teams[0];
 
         textTeam0.text = team0.Name;
         textTeam1.text = team1.Name;
@@ -653,14 +653,19 @@ public class Game : MonoBehaviour
 
     public void ActivateHumanPlayer(HumanPlayer player)
     {
+        ActiveHumanPlayer.transform.Find("SelectedMarker").gameObject.SetActive(false);
         ActiveHumanPlayer = player;
+        if (stadiumCamera.enabled)
+        {
+            ActiveHumanPlayer.transform.Find("SelectedMarker").gameObject.SetActive(true);
+        }
         playerFollowCamera.Follow = player.PlayerCameraRoot;
         SetNextHumanPlayer();
     }
 
     public void SetNextHumanPlayer()
     {
-        humanPlayerDestination.transform.Find("SelectedMarker").gameObject.SetActive(false);
+        humanPlayerDestination.transform.Find("TargetMarker").gameObject.SetActive(false);
         do
         {
             if (humanPlayerDestination.Number < humanPlayerDestination.Team.Players.Count - 1)
@@ -674,7 +679,7 @@ public class Game : MonoBehaviour
         }
         while (humanPlayerDestination == activeHumanPlayer);
 
-        humanPlayerDestination.transform.Find("SelectedMarker").gameObject.SetActive(true);
+        humanPlayerDestination.transform.Find("TargetMarker").gameObject.SetActive(true);
     }
 
     public Player GetClosestPlayerOfSameTeam(Player currentPlayer)

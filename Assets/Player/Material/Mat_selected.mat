@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_forcefield
+  m_Name: Mat_selected
   m_Shader: {fileID: -6465566751694194690, guid: ffd644366eccd1342acdd892462ca822,
     type: 3}
   m_Parent: {fileID: 0}
@@ -95,6 +95,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _AlphaMultiplier: 0.1
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -134,9 +135,9 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Emission: {r: 0, g: 0.16176471, b: 0.1872549, a: 0.21960784}
+    - _Emission: {r: 0, g: 0.16078432, b: 0.22745098, a: 0.21960784}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _ForceField_Color: {r: 10.680627, g: 0.78287274, b: 2.3716562, a: 0}
+    - _ForceField_Color: {r: 6.8831806, g: 5.5803246, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &8870915654017871176

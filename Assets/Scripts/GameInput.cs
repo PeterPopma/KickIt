@@ -14,17 +14,14 @@ public class GameInput : MonoBehaviour
 
 	private void OnViewThirdPerson()
     {
-		Game.Instance.StandStadiumCamera.SetActive(true);
+		Game.Instance.ActiveHumanPlayer.transform.Find("SelectedMarker").gameObject.SetActive(false);
 		Game.Instance.StadiumCamera.enabled = false;
 		Game.Instance.SetMessage("Changed to Player view");
 	}
 
 	private void OnViewStadium()
     {
-		if (Game.Instance.GameState != GameState_.Replay)
-		{
-			Game.Instance.StandStadiumCamera.SetActive(false);
-		}
+		Game.Instance.ActiveHumanPlayer.transform.Find("SelectedMarker").gameObject.SetActive(true);
 		Game.Instance.StadiumCamera.enabled = true;
 		Game.Instance.SetMessage("Changed to Stadium view");
 	}

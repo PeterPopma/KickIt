@@ -196,14 +196,8 @@ public class Recorder : MonoBehaviour
 
     public void EndReplay()
     {
-        if (Game.Instance.StadiumCamera.enabled)
-        {
-            Game.Instance.StandStadiumCamera.SetActive(false);
-        }
         Utilities.Log("end replay", Utilities.DEBUG_TOPIC_REPLAY);
         ResetAllAnimationLayers();
-        //cameraReplayField[goalOfTeam].enabled = false;
-        //cameraReplayGoal[goalOfTeam].enabled = false;
         cameraReplayGoal[0].enabled = false;
         cameraReplayGoal[1].enabled = false;
         cameraReplayField[0].enabled = false;
@@ -233,10 +227,5 @@ public class Recorder : MonoBehaviour
         framesPlayed = replaysPlayed = 0;
         currentPlayingFrame = currentRecordingFrame;
         cameraReplayField[goalOfTeam].enabled = true;
-
-        if (Game.Instance.StadiumCamera.enabled)
-        {
-            Game.Instance.StandStadiumCamera.SetActive(true);
-        }
     }
 }
